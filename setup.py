@@ -1,0 +1,37 @@
+from setuptools import setup
+
+setup(
+    name='bw2temporalis',
+    version="0.1",
+    packages=["bw2temporalis", "bw2temporalis.tests"],
+    author="Chris Mutel",
+    author_email="cmutel@gmail.com",
+    license=open('LICENSE.txt').read(),
+    url="https://bitbucket.org/cmutel/brightway2-temporalis",
+    install_requires=[
+        "arrow",
+        "brightway2",
+        "bw2analyzer",
+        "bw2calc>=0.11",
+        "bw2data>=0.12",
+        "progressbar-ipython",
+        "stats_arrays",
+    ],
+    long_description=open('README.rst').read(),
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 2 :: Only',
+        'Topic :: Scientific/Engineering :: Information Analysis',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'Topic :: Scientific/Engineering :: Visualization',
+    ],
+)

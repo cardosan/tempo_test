@@ -1,0 +1,12 @@
+arrow
+brightway2
+bw2analyzer
+bw2calc>=0.11
+bw2data>=0.12
+colorama
+nose
+numpy>=1.6
+progressbar-ipython
+scipy
+stats_arrays>=0.2.2
+voluptuous
