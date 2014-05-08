@@ -3,11 +3,12 @@ from bw2analyzer import GTManipulator
 from bw2calc import GraphTraversal
 from bw2data import Database
 from heapq import heappush, heappop
+import arrow
 import datetime
 import itertools
 import logging
 import pprint
-import arrow
+import warnings
 
 logging.basicConfig(filename="dynamic-lca.log", level=logging.DEBUG)
 
@@ -47,7 +48,10 @@ class DynamicLCA(object):
             (None, "Functional unit", self.now, self.gt_nodes[-1]['amount'])
         )
 
-        while self.heap and self.calc_number < self.max_calc_number:
+        while self.heap:
+            if self.calc_number >= self.max_calc_number:
+                warnings.warn("Stopping traversal due to calculation count.")
+                break
             self.iterate()
 
     def translate_edges(self, edges):

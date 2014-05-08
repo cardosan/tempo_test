@@ -1,122 +1,33 @@
 Dynamic LCA through temporal graph traversal: brightway2-temporalis
 *******************************************************************
 
-Basic strategy
-==============
+A library for the `Brightway2 LCA calculation framework <http://brightwaylca.org/>`_ that allows for a specific kind of dynamic life cycle assessments.
 
-The basic strategy is to create another LCIA method, which has the worst case values for each dynamic CF. We do this to screen out processes deep in the supply chain which we calculate could not be important even with the highest CF values applied.
+Brightway2-temporalis is open source. `Source code is available on bitbucket <https://bitbucket.org/cmutel/brightway2-temporalis>`_, and `documentation is available on read the docs <http://example.com>`_.
 
-We then apply the `graph traversal algorithm <https://brightway2-calc.readthedocs.org/en/latest/graph_traversal.html>`_ using the worst case IA method and ignoring temporal data to get a list of inventory datasets and edges that should be further investigated.
+Brightway2-temporalis has the following abilities:
 
-We then re-traverse this smaller supply chain graph, locating inventory datasets and biosphere flows in time. We create a timeline of flows to and from the environment. We can also apply dynamic CFs to get a picture of environmental impact through time.
+* Exchanges (technosphere inputs, and biosphere outputs) can be offset in time.
+* Individual exchanges can be split into multiple time steps, creating a temporal distribution for each exchange.
+* Inventory datasets can be given either relative or absolute dates and times.
+* Characterization factors can vary as a function of time.
 
-Unit of time
-============
+However, Brightway2-temporalis has the following limitations:
 
-The default unit of time is **years**, but fractional years are allowed.
+* Inventory datasets cannot change their inputs as a function of time. This limitation is necessary for the graph traversal to converge.
+* Exchanges must be linear, as in normal matrix-based LCA.
 
-Input data formats
-==================
+.. warning:: Brightway2-temporalis is still under development. There may be horrible bugs that jump out and eat all your snacks and then leave a note blaming Mike. Poor Mike. Poor hungry Mike.
 
-Inventory datasets with absolute dates
---------------------------------------
-
-Inventory datasets by default can occur at any time. To force a dataset to occur at a certain date, use the key ``absolute date``:
-
-.. code-block:: python
-
-    ("example", "foo"): {
-        "name": "a long while ago",
-        "absolute date": "1970",
-    },
-
-``absolute date`` takes a string that can be parsed by `arrow <crsmithdev.com/arrow/>`_ into a datetime. The following are acceptable:
-
-.. code-block:: python
-
-    In [1]: import arrow
-
-    In [2]: arrow.get("1970-1-1")
-    Out[2]: <Arrow [1970-01-01T00:32:50+00:00]>
-
-    In [3]: arrow.get("1970-01-01")
-    Out[3]: <Arrow [1970-01-01T00:00:00+00:00]>
-
-    In [4]: arrow.get("1970-01-01T12:00")
-    Out[4]: <Arrow [1970-01-01T12:00:00+00:00]>
-
-When in doubt, test your string in the python shell.
-
-Inventory datasets relative inputs
-----------------------------------
-
-Both inventory dataset inputs and biosphere flows (i.e. exchanges) can be distributed in time, and can occur both before and after the inventory dataset itself. Exchanges can have a new key, ``temporal distribution``,
-
-.. code-block:: python
-
-    "exchanges": [
-        {
-            "amount": 1e4,
-            "temporal distribution": [
-                (0, 100),
-                (10, 50),
-                (20, 20)
-            ]
-        }
-    ]
-
-Each tuple in ``temporal distribution`` has the format ``(relative temporal difference (in years), amount)``. The sum of all amounts in the temporal distribution should equal the total exchange amount, though this is **not** checked automatically.
-
-Dynamic characterization factors
---------------------------------
-
-.. code-block:: python
-
-    from functools import partial
-
-    STATIC_CFS = {
-        ("biosphere", "n2o"): 296,
-        ("biosphere", "chloroform"): 30,
-    }
-
-    def static_cf(datetime, cf):
-        return cf
-
-    boring_cfs = {
-        key: partial(static_cf, cf=value)
-        for key, value in STATIC_CFS.iteritems()
-    }
-
-Gotchas
-=======
-
-* The sum of all amounts in a ``temporal distribution`` is not check to sum to the total ``amount``.
-* The initial graph traversal could exclude some nodes which have important temporal dynamics, but whose total demanded amount was small. For example, the following exchange would be excluded as having no impact:
-
-.. code-block:: python
-
-    {
-        "amount": 0,
-        "temporal distribution": [
-            (0, -1e6),
-            (10, 1e6)
-        ]
-    }
-
-The best way around this software feature/bug is to create two separate sub-processes, one with the positive amounts and the other with the negative.
-
-
-Contents:
+Table of contents
+=================
 
 .. toctree::
    :maxdepth: 2
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   strategy
+   comparison
+   use
+   formats
+   gotchas
+   technical

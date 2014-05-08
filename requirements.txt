@@ -1,8 +1,8 @@
 arrow
-brightway2
-bw2analyzer
-bw2calc>=0.11
-bw2data>=0.12
+brightway2>=0.14
+bw2analyzer>=0.5.1
+bw2calc>=0.14.1
+bw2data>=0.17
 colorama
 nose
 numpy>=1.6

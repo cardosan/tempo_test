@@ -6,16 +6,20 @@ data_point = collections.namedtuple('data_point', ['dt', 'flow', 'ds', 'amount']
 
 
 class Timeline(object):
-    """Sum and group elements over time"""
+    """Sum and group elements over time.
+
+    Timeline calculations produce a list of [(datetime, amount)] tuples."""
 
     def __init__(self):
         self.raw = []
         self.characterized = []
 
     def add(self, dt, flow, ds, amount):
+        """Add a new flow from a dataset at a certain time."""
         self.raw.append(data_point(dt, flow, ds, amount))
 
     def timeline_for_flow(self, flow, data=None, cumulative=True):
+        """Create a timeline for a particular flow."""
         data = data if data is not None else self.raw
         data.sort(key=lambda x: x.dt)
         return self._summer(
