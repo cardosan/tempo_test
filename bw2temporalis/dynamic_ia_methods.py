@@ -21,14 +21,21 @@ class DynamicIAMethod(DataStore):
         warnings.warn("Dynamic CFs can't be processed; doing nothing")
         return
 
-    def to_worst_case_method(self, name):
-        """Create a static LCA method using the worst case for each dynamic CF function."""
+    def to_worst_case_method(self, name, lower=None, upper=None):
+        """Create a static LCA method using the worst case for each dynamic CF function.
+
+        Default time interval over which to test for maximum CF is 2000 to 2100."""
+        kwargs = {}
+        if lower is not None:
+            kwargs['lower'] = lower
+        if upper is not None:
+            kwargs['upper'] = upper
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             worst_case_method = Method(tuple(name))
             worst_case_method.register(dynamic_method = self.name)
         worst_case_method.write([
-            [key, abs(get_maximum_value(value))]
+            [key, abs(get_maximum_value(value, **kwargs))]
             for key, value in self.load().iteritems()
         ])
         worst_case_method.process()
