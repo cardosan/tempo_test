@@ -1,6 +1,9 @@
-import itertools
+from .dynamic_ia_methods import DynamicIAMethod, dynamic_methods
+from bw2data import Method, methods
 import collections
+import itertools
 import numpy as np
+import numbers
 
 data_point = collections.namedtuple('data_point', ['dt', 'flow', 'ds', 'amount'])
 
@@ -27,27 +30,37 @@ class Timeline(object):
             cumulative
         )
 
-    def characterize_static(self, method_dict, data=None, cumulative=True, stepped=False):
-        """``method_dict`` should be a dictionary of CFs: ``{flow: cf}``"""
+    def characterize_static(self, method, data=None, cumulative=True, stepped=False):
+        if method not in methods:
+            raise ValueError(u"LCIA static method %s not found" % unicode(method))
+        method_data = dict(Method(method).load())
         self.characterized = [
-            data_point(nt.dt, nt.flow, nt.ds, nt.amount * method_dict.get(nt.flow, 0))
-            for nt in sorted(
-                data if data is not None else self.raw,
-                key=lambda x: x.dt
-            )
+            data_point(nt.dt, nt.flow, nt.ds, nt.amount * method_data.get(nt.flow, 0))
+            for nt in (data if data is not None else self.raw)
         ]
+        self.characterized.sort(key=lambda x: x.dt)
         return self._summer(self.characterized, cumulative, stepped)
 
-    def characterize_dynamic(self, method_dict, data=None, cumulative=True, stepped=False):
-        """``method_dict`` should be a dictionary of CFs: ``{flow: cf_function(datetime)}``"""
-        self.characterized = [
-            data_point(nt.dt, nt.flow, nt.ds, nt.amount *
-                       method_dict.get(nt.flow, lambda x: 0)(nt.dt))
-            for nt in sorted(
-                data if data is not None else self.raw,
-                key=lambda x: x.dt
-            )
-        ]
+    def characterize_dynamic(self, method, data=None, cumulative=True, stepped=False):
+        if method not in dynamic_methods:
+            raise ValueError(u"LCIA dynamic method %s not found" % unicode(method))
+        method = DynamicIAMethod(method)
+        method_data = method.load()
+        method_functions = method.create_functions(method_data)
+        self.characterized = []
+
+        for obj in (data if data is not None else self.raw):
+            if obj.flow in method_functions:
+                self.characterized.extend(method_functions[obj.flow](obj.dt))
+            else:
+                self.characterized.append(data_point(
+                    obj.dt,
+                    obj.flow,
+                    obj.ds,
+                    obj.amount * method_data.get(obj.flow, 0)
+                ))
+
+        self.characterized.sort(key=lambda x: x.dt)
         return self._summer(self.characterized, cumulative, stepped)
 
     def _summer(self, iterable, cumulative, stepped=False):

@@ -4,7 +4,7 @@ Gotchas
 Temporal distributions sums are not checked
 -------------------------------------------
 
-The sum of all amounts in a ``temporal distribution`` is not check to sum to the total ``amount``.
+The sum of all amounts in a ``temporal distribution`` is not checked to sum to the total ``amount`` by default. You can check these amounts using ``utils.check_temporal_distribution_totals(my_database_name)`` function.
 
 Processes with specific temporal distributions could be incorrectly excluded
 ----------------------------------------------------------------------------
@@ -22,8 +22,3 @@ The initial graph traversal could exclude some nodes which have important tempor
     }
 
 The best way around this software feature/bug is to create two separate sub-processes, one with the positive amounts and the other with the negative.
-
-Dynamic CF functions must be pickleable
----------------------------------------
-
-Each function defined in a dynamic LCIA method must be pickleable, i.e. it must be importable from a python module (file). The easiest way to meet this requirement is to create a python file in the same path that you are working, and to define your dynamic CF functions there.

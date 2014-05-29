@@ -1,5 +1,8 @@
 Data formats
-============
+************
+
+Inventory
+=========
 
 Inventory datasets with absolute dates
 --------------------------------------
@@ -13,7 +16,7 @@ Inventory datasets by default can occur at any time. To force a dataset to occur
         "absolute date": "1970",
     },
 
-``absolute date`` takes any string that can be parsed by `arrow <crsmithdev.com/arrow/>`_ into a datetime. The following are all acceptable:
+``absolute date`` takes any string that can be parsed by `arrow <http://crsmithdev.com/arrow/>`_ into a datetime. The following are all acceptable:
 
 .. code-block:: python
 
@@ -39,80 +42,107 @@ Both inventory dataset inputs and biosphere flows (i.e. exchanges) can be distri
 
     "exchanges": [
         {
-            "amount": 1e4,
+            "amount": 1000,
             "temporal distribution": [
-                (0, 100),
-                (10, 50),
-                (20, 20)
+                (0,  500),
+                (10, 250),
+                (20, 250)
             ]
         }
     ]
 
 Each tuple in ``temporal distribution`` has the format ``(relative temporal difference (in years), amount)``. Temporal differences can be positive or negative, and give the difference between when the inventory dataset and the exchange occur.
 
-The sum of all amounts in the temporal distribution should equal the total exchange amount, though this is **not** checked automatically.
+The default unit of time is years, but fractional years are allowed.
 
-Dynamic characterization factors
---------------------------------
+The sum of all amounts in the temporal distribution should equal the total exchange amount. This is **not** checked automatically, but can be checked using the ``utils.check_temporal_distribution_totals`` function.
 
-Instead of some weird formula language, dynamic characterization factors are realized with pure python functions, e.g.
-
-.. code-block:: python
-
-    def declining_co2_importance(dt):
-        """Importance of CO2 halves every twenty years from 2010"""
-        CF = 1.
-        dt = arrow.get(dt)
-        cutoff = arrow.get(2010, 1, 1)
-        if dt < cutoff:
-            return 1. * CF
-        else:
-            return 0.5 ** ((dt - cutoff).days / 365.24 / 20) * CF
+Impact Assessment
+=================
 
 Dynamic impact assessment methods
 ---------------------------------
 
-The data format for dynamic IA methods is simply:
+Brightway2-temporalis supports three types of characterization factors for use in dynamic LCA:
+
+#. Static characterization factors, i.e. those which do not change over time.
+#. Dynamic characterization factors, i.e. those whose value changes over time, but whose impact still occurs at the time of emission.
+#. Extended dynamic characterization factors, i.e. CFs whose impact is allocated over time using something like atmospheric decay rates.
+
+Impact assessment methods must be defined as a ``DynamicIAMethod``, not a normal LCIA Method, even if all CFs are static (see :ref:`dynamic-lcia`).
+
+The data format for dynamic IA methods is:
 
 .. code-block:: python
 
     {
-        ("biosphere", "flow"): python_function
+        ("biosphere", "flow"): number or python_function_as_string
     }
-
-Each ``python_function`` must take a datetime as its first argument, and should require only one argument.
-
-.. note:: Because of the way that `pickling works <https://docs.python.org/2/library/pickle.html#relationship-to-other-python-modules>`_, python functions cannot be defined in the shell or in an ipython notebook, but must be in a module (i.e. a file) that can be imported.
 
 Static characterization factors
 -------------------------------
 
-Requiring a function makes static characterization factors a little more difficult. However, we can use ``functools.partial`` to `curry <http://en.wikipedia.org/wiki/Currying>`_ a dummy function to always return the same value:
+Static characterization factors can be defined as usual, e.g.
 
 .. code-block:: python
 
-    from functools import partial
 
-    STATIC_CFS = {
+    {
         ("biosphere", "n2o"): 296,
         ("biosphere", "chloroform"): 30,
     }
 
-    def static_cf(datetime, cf):
-        return cf
+Dynamic characterization factors
+--------------------------------
 
-    boring_cfs = {
-        key: partial(static_cf, cf=value)
-        for key, value in STATIC_CFS.iteritems()
-    }
+Dynamic characterization factors are realized with pure python functions, e.g.
 
 .. code-block:: python
 
-    In [1]: boring_cfs[("biosphere", "n2o")](1)
-    Out[1]: 296
+    def silly_random_cf(datetime):
+        import random
+        return random.random()
 
-    In [2]: boring_cfs[("biosphere", "n2o")](1000)
-    Out[2]: 296
+    def increasing_co2_importance(datetime):
+        """Importance of CO2 doubles every twenty years from 2010"""
+        CF = 1.
+        dt = arrow.get(datetime)
+        cutoff = arrow.get(2010, 1, 1)
+        return max(1, 2 ** ((dt - cutoff).days / 365.24 / 20) * CF)
 
-    In [3]: boring_cfs[("biosphere", "n2o")](-1e6)
-    Out[3]: 296
+    def days_since_best_movie_evar(datetime):
+        """http://en.wikipedia.org/wiki/Transformers:_Dark_of_the_Moon"""
+        return (arrow.get(dt) - arrow.get(2011, 6, 23)).days
+
+However, there are some things to bear in mind with dynamic characterization functions:
+
+* Dynamic characterization functions must take a datetime as the single input, and return a single characterization factor.either a single numeric value.
+* Functions should not be defined by name. Instead, they should have a name that can be generated automatically and then substituted, i.e. ``def %s(datetime)``. This dynamicity is needed to avoid name conflicts.
+* These functions must be stored as **unicode strings**, not actual python code:
+
+.. code-block:: python
+
+    {
+        ("omg", "wtf-bbq"): """def %s(datetime):
+    return (arrow.get(datetime) - arrow.get(2011, 6, 23)).days"""
+    }
+
+These function strings will be executed using ``exec``. Don't accept dynamic characterization function code from strange men in dark alleyways.
+
+Extended dynamic characterization factors
+-----------------------------------------
+
+Extended dynamic characterization functions don't return a single number, but rather a list of characterization factors allocated over time.
+
+Returned CFs must be `named tuples <https://docs.python.org/2/library/collections.html#collections.namedtuple>`_ with field names ``dt``, and ``amount``.
+
+.. code-block:: python
+
+    def spread_over_a_week(datetime):
+        """Spread impact over a week"""
+        from datetime import timedelta
+        import collections
+        return_tuple = collections.namedtuple('return_tuple', ['dt', 'amount'])
+        return [return_tuple(datetime + timedelta(days=x), 1 / 7.) for x in range(7)]
+
+Aside from the return format, they are identical to normal dynamic characterization factors, and have the same restrictions.

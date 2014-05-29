@@ -1,6 +1,8 @@
 Technical guide
 ***************
 
+.. _dynamic-lcia:
+
 Impact Assessment methods
 =========================
 
