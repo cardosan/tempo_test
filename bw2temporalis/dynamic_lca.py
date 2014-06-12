@@ -15,11 +15,11 @@ logging.basicConfig(filename="dynamic-lca.log", level=logging.DEBUG)
 
 class DynamicLCA(object):
     """Calculate a dynamic LCA, where processes, emissions, and CFs can vary throughout time."""
-    def __init__(self, demand, dynamic_method, worst_case_method, now, max_calc_number=1e4, cutoff = 0.001):
+    def __init__(self, demand, dynamic_method, worst_case_method, now=None, max_calc_number=1e4, cutoff = 0.001):
         self.demand = demand
         self.dynamic_method = dynamic_method
         self.worst_case_method = worst_case_method
-        self.now = now
+        self.now = now or arrow.now()
         self.max_calc_number = max_calc_number
         self.cutoff_value = cutoff
 
