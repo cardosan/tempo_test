@@ -33,7 +33,7 @@ class Timeline(object):
     def characterize_static(self, method, data=None, cumulative=True, stepped=False):
         if method not in methods:
             raise ValueError(u"LCIA static method %s not found" % unicode(method))
-        method_data = dict(Method(method).load())
+        method_data = {x[0]: x[1] for x in Method(method).load()}
         self.characterized = [
             data_point(nt.dt, nt.flow, nt.ds, nt.amount * method_data.get(nt.flow, 0))
             for nt in (data if data is not None else self.raw)
