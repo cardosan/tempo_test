@@ -2,26 +2,25 @@ from .timeline import Timeline
 from bw2analyzer import GTManipulator
 from bw2calc import GraphTraversal
 from bw2data import Database
+from bw2data.logs import get_logger
 from heapq import heappush, heappop
 import arrow
 import datetime
 import itertools
-import logging
 import pprint
 import warnings
-
-logging.basicConfig(filename="dynamic-lca.log", level=logging.DEBUG)
 
 
 class DynamicLCA(object):
     """Calculate a dynamic LCA, where processes, emissions, and CFs can vary throughout time."""
-    def __init__(self, demand, dynamic_method, worst_case_method, now=None, max_calc_number=1e4, cutoff = 0.001):
+    def __init__(self, demand, dynamic_method, worst_case_method, now=None, max_calc_number=1e4, cutoff = 0.001, log=False):
         self.demand = demand
         self.dynamic_method = dynamic_method
         self.worst_case_method = worst_case_method
         self.now = now or arrow.now()
         self.max_calc_number = max_calc_number
         self.cutoff_value = cutoff
+        self.log = get_logger("dynamic-lca.log") if log else None
 
     def calculate(self):
         self.timeline = Timeline()
@@ -39,8 +38,9 @@ class DynamicLCA(object):
         )
         self.gt_edges = self.translate_edges(self.gt_results['edges'])
 
-        logging.debug("NODES: " + pprint.pformat(self.gt_nodes))
-        logging.debug("EDGES: " + pprint.pformat(self.gt_edges))
+        if self.log:
+            self.log.info("NODES: " + pprint.pformat(self.gt_nodes))
+            self.log.info("EDGES: " + pprint.pformat(self.gt_edges))
 
         # Initialize heap
         heappush(
@@ -82,7 +82,7 @@ class DynamicLCA(object):
         if ds == "Functional unit":
             return
         data = Database(ds[0]).load()[ds]
-        if not data.get('type') == "process":
+        if not data.get('type', 'process') == "process":
             return
         for exc in data.get('exchanges', []):
             if not exc.get("type") == "biosphere":
@@ -116,7 +116,8 @@ class DynamicLCA(object):
             return dt
         ds_data = Database(ds[0]).load()[ds]
         absolute = "absolute date" in ds_data
-        logging.debug("check_absolute: %s (%s)" % (absolute, ds))
+        if self.log:
+            self.log.info("check_absolute: %s (%s)" % (absolute, ds))
         if "absolute date" in ds_data:
             return arrow.get(ds_data['absolute date'])
         else:
@@ -127,10 +128,12 @@ class DynamicLCA(object):
 
         dt = self.check_absolute(ds, dt)
 
-        logging.debug(".iterate(): %s, %s, %s" % (ds, dt, amount))
+        if self.log:
+            self.log.info(".iterate(): %s, %s, %s" % (ds, dt, amount))
         self.add_biosphere_flows(ds, dt, amount)
         for edge in self.tech_edges_from_node(ds):
-            logging.debug(".iterate:edge: " + pprint.pformat(edge))
+            if self.log:
+                self.log.info(".iterate:edge: " + pprint.pformat(edge))
             input_amount = amount * edge['exc_amount']
             if self.discard_node(edge['from'], input_amount):
                 continue

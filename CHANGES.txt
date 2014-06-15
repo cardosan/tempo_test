@@ -1,6 +1,17 @@
 Changelog
 *********
 
+0.3 (2014-XX-XX)
+================
+
+* Improved DynamicLCA logging
+
+0.2 (2014-XX-XX)
+================
+
+* Rewrote dynamic IA format so that functions are stored as strings directly in the method data
+* Allow for dynamic methods to split impact over time
+
 0.1 (2014-XX-XX)
 ================
 
