@@ -17,6 +17,7 @@ setup(
         "progressbar-ipython",
         "stats_arrays",
     ],
+    description='Provide a dynamic LCA calculations for the Brightway2 life cycle assessment framework',
     long_description=open('README.rst').read(),
     classifiers=[
         'Development Status :: 4 - Beta',
