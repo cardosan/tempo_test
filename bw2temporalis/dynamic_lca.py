@@ -28,7 +28,12 @@ class DynamicLCA(object):
         self.heap = []
         self.calc_number = 0
 
-        self.gt_results = self.gt.calculate(self.demand, self.worst_case_method)
+        self.gt_results = self.gt.calculate(
+            self.demand,
+            self.worst_case_method,
+            cutoff=self.cutoff,
+            max_calc=self.max_calc_number
+        )
         self.lca = self.gt_results['lca']
         self.temporal_edges = self.get_temporal_edges()
         self.cutoff = abs(self.lca.score) * self.cutoff_value
