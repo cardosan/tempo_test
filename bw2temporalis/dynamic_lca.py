@@ -1,3 +1,4 @@
+from .temporal_distribution import TemporalDistribution
 from .timeline import Timeline
 from bw2analyzer import GTManipulator
 from bw2calc import GraphTraversal
@@ -7,6 +8,7 @@ from heapq import heappush, heappop
 import arrow
 import datetime
 import itertools
+import numpy as np
 import pprint
 import warnings
 
@@ -31,7 +33,9 @@ class DynamicLCA(object):
         self.gt_results = self.gt.calculate(
             self.demand,
             self.worst_case_method,
-            cutoff=self.cutoff,
+            # Do we want the same or different cutoff vales?
+            # Current approach is different, 0.005 versus 0.001
+            # cutoff=self.cutoff_value,
             max_calc=self.max_calc_number
         )
         self.lca = self.gt_results['lca']
@@ -78,10 +82,22 @@ class DynamicLCA(object):
                     continue
                 for exc in value.get("exchanges", []):
                     if "temporal distribution" not in exc:
-                        continue
+                        edges[(exc['input'], key)] = \
+                            self.fake_temporal_distribution(exc)
                     else:
-                        edges[(exc['input'], key)] = exc['temporal distribution']
+                        edges[(exc['input'], key)] = \
+                            self.prepare_temporal_distribution(exc)
         return edges
+
+    def prepare_temporal_distribution(self, exc):
+        array = np.array(exc['temporal distribution']).astype(float)
+        return TemporalDistribution(array[0, :], array[1, :])
+
+    def fake_temporal_distribution(self, exc):
+        return TemporalDistribution(
+            np.array((0.,)),
+            np.array(exc['amount']).astype(float)
+        )
 
     def add_biosphere_flows(self, ds, dt, amount):
         if ds == "Functional unit":
@@ -124,6 +140,7 @@ class DynamicLCA(object):
         if self.log:
             self.log.info("check_absolute: %s (%s)" % (absolute, ds))
         if "absolute date" in ds_data:
+            raise NotImplementedError("Absolute dates not yet supported")
             return arrow.get(ds_data['absolute date'])
         else:
             return dt
