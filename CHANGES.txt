@@ -1,6 +1,11 @@
 Changelog
 *********
 
+0.4 (2014-XX-XX)
+================
+
+* Use new TemporalDistribution instead of expanding each time element of temporal exchanges
+
 0.3 (2014-XX-XX)
 ================
 

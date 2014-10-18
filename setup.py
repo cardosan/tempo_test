@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='bw2temporalis',
-    version="0.2",
+    version="0.4",
     packages=["bw2temporalis", "bw2temporalis.tests"],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
@@ -14,6 +14,7 @@ setup(
         "bw2analyzer",
         "bw2calc>=0.11",
         "bw2data>=0.12",
+        "bw2speedups>=2.0",
         "progressbar-ipython",
         "stats_arrays",
     ],
