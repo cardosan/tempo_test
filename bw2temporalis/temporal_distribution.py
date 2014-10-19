@@ -18,7 +18,7 @@ class TemporalDistribution(object):
         if isinstance(other, TemporalDistribution):
             times = (self.times.reshape((-1, 1)) +
                      other.times.reshape((1, -1))).ravel()
-            values = (self.values.reshape((-1, 1)) +
+            values = (self.values.reshape((-1, 1)) *
                       other.values.reshape((1, -1))).ravel()
             return TemporalDistribution(*consolidate(times, values))
         else:
