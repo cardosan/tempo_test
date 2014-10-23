@@ -23,7 +23,7 @@ def check_temporal_distribution_totals(name):
     data = Database(name).load()
     errors = []
     for key, value in data.iteritems():
-        if value['type'] != 'process':
+        if value.get('type', 'process') != 'process':
             continue
         for exchange in value.get('exchanges', []):
             if 'temporal distribution' in exchange:
