@@ -1,3 +1,4 @@
+from .temporal_distribution import TemporalDistribution
 from .timeline import Timeline
 from bw2analyzer import GTManipulator
 from bw2calc import GraphTraversal
@@ -7,6 +8,7 @@ from heapq import heappush, heappop
 import arrow
 import datetime
 import itertools
+import numpy as np
 import pprint
 import warnings
 
@@ -37,10 +39,18 @@ class DynamicLCA(object):
         self.heap = []
         self.calc_number = 0
 
-        self.gt_results = self.gt.calculate(self.demand, self.worst_case_method)
+        self.gt_results = self.gt.calculate(
+            self.demand,
+            self.worst_case_method,
+            # Do we want the same or different cutoff vales?
+            # Current approach is different, 0.005 versus 0.001
+            # cutoff=self.cutoff_value,
+            max_calc=self.max_calc_number
+        )
         self.lca = self.gt_results['lca']
         self.temporal_edges = self.get_temporal_edges()
-        self.cutoff = abs(self.lca.score * self.cutoff_value)
+        self.add_func_unit_to_temporal_edges()
+        self.cutoff = abs(self.lca.score) * self.cutoff_value
         self.gt_nodes = GTManipulator.add_metadata(
             self.gt_results['nodes'],
             self.lca
@@ -62,7 +72,15 @@ class DynamicLCA(object):
         # Initialize heap
         heappush(
             self.heap,
-            (None, "Functional unit", self.now, self.gt_nodes[-1]['amount'])
+            (
+                None,
+                "Functional unit",
+                self.now,
+                TemporalDistribution(
+                    np.array((0.,)),
+                    np.array((self.gt_nodes[-1]['amount'],)).astype(float)
+                )
+            )
         )
 
         while self.heap:
@@ -89,13 +107,32 @@ class DynamicLCA(object):
                 if value.get("type") != "process":
                     continue
                 for exc in value.get("exchanges", []):
-                    if "temporal distribution" not in exc:
-                        continue
-                    else:
-                        edges[(exc['input'], key)] = exc['temporal distribution']
+                    # Have to be careful here, because can have
+                    # multiple exchanges with same input/output
+                    edges[(exc['input'], key)] = (
+                        self.get_temporal_distribution(exc) +
+                        edges.get((exc['input'], key), 0))
         return edges
 
-    def add_biosphere_flows(self, ds, dt, amount):
+    def get_temporal_distribution(self, exc):
+        if "temporal distribution" not in exc:
+            return TemporalDistribution(
+                np.array((0.,)),
+                np.array((exc['amount'],)).astype(float)
+            )
+        else:
+            array = np.array(exc['temporal distribution']).astype(float)
+            return TemporalDistribution(array[:, 0], array[:, 1])
+
+    def add_func_unit_to_temporal_edges(self):
+        for key, value in self.demand.items():
+            self.temporal_edges[(key, "Functional unit")] = \
+                TemporalDistribution(
+                    np.array((0.,)),
+                    np.array((value,)).astype(float)
+                )
+
+    def add_biosphere_flows(self, ds, dt, tech_td):
         if ds == "Functional unit":
             return
         data = Database(ds[0]).load()[ds]
@@ -104,16 +141,12 @@ class DynamicLCA(object):
         for exc in data.get('exchanges', []):
             if not exc.get("type") == "biosphere":
                 continue
-            elif "temporal distribution" not in exc:
-                self.timeline.add(dt, exc['input'], ds, amount * exc['amount'])
-            else:
-                for year_delta, subtotal in exc['temporal distribution']:
-                    self.timeline.add(
-                        dt + self.to_timedelta(year_delta),
-                        exc['input'],
-                        ds,
-                        amount * subtotal
-                    )
+            bio_td = self.get_temporal_distribution(exc)
+            for tech_year_delta, tech_amount in tech_td:
+                for bio_year_delta, bio_amount in bio_td:
+                    occurs = dt + self.to_timedelta(tech_year_delta) + \
+                        self.to_timedelta(bio_year_delta)
+                    self.timeline.add(occurs, exc['input'], ds, tech_amount * bio_amount)
 
     def tech_edges_from_node(self, node):
         return itertools.ifilter(
@@ -140,35 +173,43 @@ class DynamicLCA(object):
         absolute = "absolute date" in ds_data
         self.log.info("check_absolute: %s (%s)" % (absolute, ds))
         if "absolute date" in ds_data:
+            raise NotImplementedError("Absolute dates not yet supported")
             return arrow.get(ds_data['absolute date'])
         else:
             return dt
 
     def iterate(self):
-        _, ds, dt, amount = heappop(self.heap)  # Don't care about impact
+        # Ignore the calculated impact
+        # `ds` is the dataset key
+        # `dt` is the datetime; ignored until support for
+        # absolute dates is re-added.
+        # `td` is a TemporalDistribution instance, which gives
+        # how much of the dataset is used over time at
+        # this point in the graph traversal
+        _, ds, dt, td = heappop(self.heap)  # Don't care about impact
 
+        # Raises an error for absolute dates (for now)
         dt = self.check_absolute(ds, dt)
 
-        self.log.info(".iterate(): %s, %s, %s" % (ds, dt, amount))
-        self.add_biosphere_flows(ds, dt, amount)
+        if self.log:
+            self.log.info(".iterate(): %s, %s, %s" % (ds, dt, td))
+        self.add_biosphere_flows(ds, dt, td)
         for edge in self.tech_edges_from_node(ds):
-            self.log.info(
-                ("Iterate edge: (calc. number %s)\n" % self.calc_number) + \
-                pprint.pformat(edge)
-            )
-            input_amount = amount * edge['exc_amount']
-            if self.discard_node(edge['from'], input_amount):
-                continue
-            try:
-                temporal_edges = self.temporal_edges[(edge['from'], edge['to'])]
-            except KeyError:
-                temporal_edges = [(0, edge['exc_amount'])]
+            if self.log:
+                self.log.info(".iterate:edge: " + pprint.pformat(edge))
 
-            for year_delta, subtotal in temporal_edges:
-                heappush(self.heap, (
-                    abs(self.lca.score * subtotal / amount),
+            # Temporal distribution for this edge.
+            # Total is amount of exchange times amount of input
+            new_temporal_distribution = self.temporal_edges[(edge['from'], edge['to'])] * td
+            if self.discard_node(
                     edge['from'],
-                    dt + self.to_timedelta(year_delta),
-                    subtotal * amount
-                ))
+                    new_temporal_distribution.total):
+                continue
+
+            heappush(self.heap, (
+                self.lca.score,
+                edge['from'],
+                dt,
+                new_temporal_distribution
+            ))
         self.calc_number += 1
