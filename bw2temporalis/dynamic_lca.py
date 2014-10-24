@@ -24,13 +24,14 @@ class FakeLog(object):
 
 class DynamicLCA(object):
     """Calculate a dynamic LCA, where processes, emissions, and CFs can vary throughout time."""
-    def __init__(self, demand, dynamic_method, worst_case_method, now=None, max_calc_number=1e4, cutoff = 0.001, log=False):
+    def __init__(self, demand, dynamic_method, worst_case_method, now=None, max_calc_number=1e4, cutoff = 0.001, log=False, gt_kwargs={}):
         self.demand = demand
         self.dynamic_method = dynamic_method
         self.worst_case_method = worst_case_method
         self.now = now or arrow.now()
         self.max_calc_number = max_calc_number
         self.cutoff_value = cutoff
+        self.gt_kwargs = gt_kwargs
         self.log = get_logger("dynamic-lca.log") if log else FakeLog()
 
     def calculate(self):
@@ -39,13 +40,16 @@ class DynamicLCA(object):
         self.heap = []
         self.calc_number = 0
 
+        if 'max_calc' not in self.gt_kwargs:
+            self.gt_kwargs['max_calc'] = self.max_calc_number
+
         self.gt_results = self.gt.calculate(
             self.demand,
             self.worst_case_method,
             # Do we want the same or different cutoff vales?
             # Current approach is different, 0.005 versus 0.001
             # cutoff=self.cutoff_value,
-            max_calc=self.max_calc_number
+            **self.gt_kwargs
         )
         self.lca = self.gt_results['lca']
         self.temporal_edges = self.get_temporal_edges()
