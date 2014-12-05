@@ -28,6 +28,15 @@ class TemporalDistribution(object):
                 raise ValueError(u"Can't multiply TemporalDistribution and %s" \
                                  % type(other))
 
+    def __div__(self, other):
+        try:
+            other = float(other)
+        except:
+            raise ValueError(
+                u"Can only divide a TemporalDistribution by a number"
+            )
+        return TemporalDistribution(self.times, self.values / other)
+
     def __add__(self, other):
         if isinstance(other, TemporalDistribution):
             times = np.hstack((self.times, other.times))

@@ -30,6 +30,24 @@ class TemporalDistributionTestCase(unittest.TestCase):
             multiplied.values
         ))
 
+    def test_div_td(self):
+        td = self.create_td()
+        td2 = TD(np.array((-1., 0, 1.)), np.ones(3).astype(float))
+        with self.assertRaises(ValueError):
+            td / td2
+
+    def test_div_int(self):
+        td = self.create_td()
+        divided = td / 2.
+        self.assertTrue(np.allclose(
+            np.arange(5),
+            divided.times
+        ))
+        self.assertTrue(np.allclose(
+            np.ones(5),
+            divided.values
+        ))
+
     def test_mul_int(self):
         td = self.create_td() * 5
         self.assertTrue(np.allclose(
