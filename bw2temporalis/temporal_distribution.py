@@ -9,6 +9,9 @@ class TemporalDistribution(object):
             assert isinstance(times, np.ndarray)
             assert isinstance(values, np.ndarray)
             assert times.shape == values.shape
+            # Type conversion needed for consolidate cython function
+            times = times.astype(np.float64)
+            values = values.astype(np.float64)
         except AssertionError:
             raise ValueError(u"Invalid input values")
         self.times = times

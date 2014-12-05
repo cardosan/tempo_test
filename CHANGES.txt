@@ -1,6 +1,12 @@
 Changelog
 *********
 
+0.5.1 (2014-12-05)
+==================
+
+* Force conversion to correct numeric type in TemporalDistribution
+
+
 0.5 (2014-12-05)
 ================
 
