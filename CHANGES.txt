@@ -1,23 +1,28 @@
 Changelog
 *********
 
-0.4 (2014-XX-XX)
+0.5 (2014-12-05)
 ================
+
+* Fix coproducts and substitution. Add tests.
+
+0.4
+===
 
 * Use new TemporalDistribution instead of expanding each time element of temporal exchanges
 
-0.3 (2014-XX-XX)
-================
+0.3
+===
 
 * Improved DynamicLCA logging
 
-0.2 (2014-XX-XX)
-================
+0.2
+===
 
 * Rewrote dynamic IA format so that functions are stored as strings directly in the method data
 * Allow for dynamic methods to split impact over time
 
-0.1 (2014-XX-XX)
-================
+0.1
+===
 
 Initial check-in.
