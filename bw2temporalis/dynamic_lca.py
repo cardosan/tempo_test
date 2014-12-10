@@ -23,9 +23,8 @@ class FakeLog(object):
 
 class DynamicLCA(object):
     """Calculate a dynamic LCA, where processes, emissions, and CFs can vary throughout time."""
-    def __init__(self, demand, dynamic_method, worst_case_method, now=None, max_calc_number=1e4, cutoff=0.001, log=False, gt_kwargs={}):
+    def __init__(self, demand, worst_case_method, now=None, max_calc_number=1e4, cutoff=0.001, log=False, gt_kwargs={}):
         self.demand = demand
-        self.dynamic_method = dynamic_method
         self.worst_case_method = worst_case_method
         self.now = now or arrow.now()
         self.max_calc_number = max_calc_number
@@ -62,7 +61,6 @@ class DynamicLCA(object):
 
         self.log.info(u"Starting dynamic LCA")
         self.log.info(u"Demand: %s" % self.demand)
-        self.log.info(u"Dynamic method: %s" % unicode(self.dynamic_method))
         self.log.info(u"Worst case method: %s" % unicode(self.worst_case_method))
         self.log.info(u"Start datetime: %s" % self.now.isoformat())
         self.log.info(u"Maximum calculations: %i" % self.max_calc_number)
