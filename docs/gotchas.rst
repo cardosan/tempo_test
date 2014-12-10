@@ -9,7 +9,7 @@ The sum of all amounts in a ``temporal distribution`` is not checked to sum to t
 Processes with specific temporal distributions could be incorrectly excluded
 ----------------------------------------------------------------------------
 
-The initial graph traversal could exclude some nodes which have important temporal dynamics, but whose total demanded amount was small. For example, the following exchange would be excluded as having no impact:
+The initial graph traversal could exclude some nodes which have important temporal dynamics, but whose total demanded amount was small. For example, the following exchange would be excluded as having no impact, because the total amount was zero:
 
 .. code-block:: python
 

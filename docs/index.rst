@@ -20,8 +20,6 @@ However, Brightway2-temporalis has the following limitations:
 
 See the example ipython notebook (`nbviewer <http://nbviewer.ipython.org/url/brightwaylca.org/examples/brightway2-temporalis.ipynb>`_, `html <http://brightwaylca.org/examples/brightway2-temporalis.html>`_) for a real usage example.
 
-.. warning:: Brightway2-temporalis is still under development. There may be horrible bugs that jump out and eat all your snacks and then leave a note blaming Mike. Poor Mike. Poor hungry Mike.
-
 Table of contents
 =================
 

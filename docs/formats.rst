@@ -4,35 +4,6 @@ Data formats
 Inventory
 =========
 
-Inventory datasets with absolute dates
---------------------------------------
-
-Inventory datasets by default can occur at any time. To force a dataset to occur at a certain date, use the key ``absolute date``:
-
-.. code-block:: python
-
-    ("example", "foo"): {
-        "name": "a long while ago",
-        "absolute date": "1970",
-    },
-
-``absolute date`` takes any string that can be parsed by `arrow <http://crsmithdev.com/arrow/>`_ into a datetime. The following are all acceptable:
-
-.. code-block:: python
-
-    In [1]: import arrow
-
-    In [2]: arrow.get("1970-1-1")
-    Out[2]: <Arrow [1970-01-01T00:32:50+00:00]>
-
-    In [3]: arrow.get("1970-01-01")
-    Out[3]: <Arrow [1970-01-01T00:00:00+00:00]>
-
-    In [4]: arrow.get("1970-01-01T12:00")
-    Out[4]: <Arrow [1970-01-01T12:00:00+00:00]>
-
-When in doubt, test your string in the python shell.
-
 Exchanges with temporal distributions
 -------------------------------------
 
@@ -45,8 +16,8 @@ Both inventory dataset inputs and biosphere flows (i.e. exchanges) can be distri
             "amount": 1000,
             "temporal distribution": [
                 (0,  500),
-                (10, 250),
-                (20, 250)
+                (7.5, 250),
+                (15, 250)
             ]
         }
     ]
@@ -78,6 +49,8 @@ The data format for dynamic IA methods is:
     {
         ("biosphere", "flow"): number or python_function_as_string
     }
+
+.. note:: This data format is different than the normal method data; it is a dictionary, not a list.
 
 Static characterization factors
 -------------------------------
@@ -116,8 +89,9 @@ Dynamic characterization factors are realized with pure python functions, e.g.
 
 However, there are some things to bear in mind with dynamic characterization functions:
 
-* Dynamic characterization functions must take a datetime as the single input, and return a single characterization factor.either a single numeric value.
-* Functions should not be defined by name. Instead, they should have a name that can be generated automatically and then substituted, i.e. ``def %s(datetime)``. This dynamicity is needed to avoid name conflicts.
+* Dynamic characterization functions must take a datetime as the single input, and return a single numeric characterization factor.
+* * You will need to import whatever you need in the body of the function; don't assume anything other than the standard library is in the current namespace.
+* Functions have to be defined in a slightly funny way. They should not be defined by name. Instead, they should have a name of "``%s``" that can be generated automatically and substituted by the temporalis library, i.e. ``def %s(datetime)``. This dynamicity is needed to avoid name conflicts.
 * These functions must be stored as **unicode strings**, not actual python code:
 
 .. code-block:: python
@@ -126,6 +100,8 @@ However, there are some things to bear in mind with dynamic characterization fun
         ("omg", "wtf-bbq"): """def %s(datetime):
     return (arrow.get(datetime) - arrow.get(2011, 6, 23)).days"""
     }
+
+This can be a bit confusing. See `the examples <https://bitbucket.org/cmutel/brightway2-temporalis/src/default/bw2temporalis/examples/ia.py?at=default#cl-76>`__ for a real-world implementation.
 
 These function strings will be executed using ``exec``. Don't accept dynamic characterization function code from strange men in dark alleyways.
 
@@ -144,5 +120,7 @@ Returned CFs must be `named tuples <https://docs.python.org/2/library/collection
         import collections
         return_tuple = collections.namedtuple('return_tuple', ['dt', 'amount'])
         return [return_tuple(datetime + timedelta(days=x), 1 / 7.) for x in range(7)]
+
+See also `functions in the examples <https://bitbucket.org/cmutel/brightway2-temporalis/src/default/bw2temporalis/examples/ia.py?at=default#cl-99>`__.
 
 Aside from the return format, they are identical to normal dynamic characterization factors, and have the same restrictions.
