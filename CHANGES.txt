@@ -1,11 +1,16 @@
 Changelog
 *********
 
+0.6 (2014-12-09)
+================
+
+* FEATURE: Added ``examples`` directory.
+* Small bugfixes
+
 0.5.1 (2014-12-05)
 ==================
 
 * Force conversion to correct numeric type in TemporalDistribution
-
 
 0.5 (2014-12-05)
 ================

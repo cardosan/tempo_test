@@ -2,8 +2,8 @@ from setuptools import setup
 
 setup(
     name='bw2temporalis',
-    version="0.5.1",
-    packages=["bw2temporalis", "bw2temporalis.tests"],
+    version="0.6",
+    packages=["bw2temporalis", "bw2temporalis.tests", "bw2temporalis.examples"],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
     license=open('LICENSE.txt').read(),
