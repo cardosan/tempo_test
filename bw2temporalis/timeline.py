@@ -3,7 +3,7 @@ from bw2data import Method, methods
 import collections
 import itertools
 import numpy as np
-import numbers
+
 
 data_point = collections.namedtuple('data_point', ['dt', 'flow', 'ds', 'amount'])
 
@@ -13,22 +13,21 @@ class Timeline(object):
 
     Timeline calculations produce a list of [(datetime, amount)] tuples."""
 
-    def __init__(self):
-        self.raw = []
+    def __init__(self, data=None):
+        self.raw = data or []
         self.characterized = []
 
     def add(self, dt, flow, ds, amount):
         """Add a new flow from a dataset at a certain time."""
         self.raw.append(data_point(dt, flow, ds, amount))
 
-    def timeline_for_flow(self, flow, data=None, cumulative=True):
-        """Create a timeline for a particular flow."""
-        data = data if data is not None else self.raw
-        data.sort(key=lambda x: x.dt)
-        return self._summer(
-            itertools.ifilter(lambda x: x.flow == flow, data),
-            cumulative
-        )
+    def timeline_for_flow(self, flow):
+        """Create a new Timeline for a particular flow."""
+        return Timeline([x for x in self.raw if x.flow == flow])
+
+    def timeline_for_activity(self, activity):
+        """Create a new Timeline for a particular activity."""
+        return Timeline([x for x in self.raw if x.ds == activity])
 
     def characterize_static(self, method, data=None, cumulative=True, stepped=False):
         if method not in methods:
@@ -51,7 +50,14 @@ class Timeline(object):
 
         for obj in (data if data is not None else self.raw):
             if obj.flow in method_functions:
-                self.characterized.extend(method_functions[obj.flow](obj.dt))
+                self.characterized.extend([
+                    data_point(
+                        item.dt,
+                        obj.flow,
+                        obj.ds,
+                        item.amount * obj.amount
+                    ) for item in method_functions[obj.flow](obj.dt)
+                ])
             else:
                 self.characterized.append(data_point(
                     obj.dt,
