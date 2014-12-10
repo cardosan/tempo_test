@@ -1,5 +1,5 @@
 from .utils import get_maximum_value
-from bw2data import DataStore, Method
+from bw2data import DataStore, Method, methods
 from bw2data.serialization import SerializedDict
 from bw2data.utils import random_string
 import itertools
@@ -35,7 +35,8 @@ class DynamicIAMethod(DataStore):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             worst_case_method = Method(tuple(name))
-            worst_case_method.register(dynamic_method = self.name)
+            if worst_case_method.name not in methods:
+                worst_case_method.register(dynamic_method = self.name)
         data = self.load()
         data.update(**self.create_functions())
         worst_case_method.write([
