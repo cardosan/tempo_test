@@ -90,6 +90,8 @@ class DynamicLCA(object):
                 break
             self.iterate()
 
+        return self.timeline
+
     def translate_edges(self, edges):
         for edge in edges:
             edge['from'] = self.gt_nodes[edge['from']].get(

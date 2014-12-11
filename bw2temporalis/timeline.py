@@ -17,9 +17,21 @@ class Timeline(object):
         self.raw = data or []
         self.characterized = []
 
+    def sort(self):
+        """Sort the raw timeline data. Characterized data is already sorted."""
+        self.raw.sort(key=lambda x: x.dt)
+
     def add(self, dt, flow, ds, amount):
         """Add a new flow from a dataset at a certain time."""
         self.raw.append(data_point(dt, flow, ds, amount))
+
+    def flows(self):
+        """Get set of flows in timeline"""
+        return {pt.flow for pt in self.raw}
+
+    def processes(self):
+        """Get set of processes in timeline"""
+        return {pt.ds for pt in self.raw}
 
     def timeline_for_flow(self, flow):
         """Create a new Timeline for a particular flow."""
@@ -77,13 +89,17 @@ class Timeline(object):
         if stepped:
             return self._stepper(data)
         else:
-            return data
+            return self._to_year([x[0] for x in data]), [x[1] for x in data]
+
+    def _to_year(self, lst):
+        to_yr = lambda x: x.year + x.month / 12. + x.day / 365.
+        return [to_yr(obj) for obj in lst]
 
     def _stepper(self, iterable):
         xs, ys = zip(*iterable)
         xs = list(itertools.chain(*zip(xs, xs)))
         ys = [0] + list(itertools.chain(*zip(ys, ys)))[:-1]
-        return xs, ys
+        return self._to_year(xs), ys
 
     def _sum_amount_over_time(self, iterable):
         return sorted([

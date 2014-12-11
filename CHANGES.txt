@@ -1,6 +1,13 @@
 Changelog
 *********
 
+0.6.1 (2014-XX-XX)
+==================
+
+* Added ``.flows()`` and ``.processes()`` methods to timeline.
+* ``DynamicLCA.calculate()`` now returns a ``Timeline`` instance.
+* ``Timeline`` characterization now returns floating-point year values instead of datetimes.
+
 0.6 (2014-12-09)
 ================
 
