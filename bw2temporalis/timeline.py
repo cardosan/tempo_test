@@ -8,6 +8,10 @@ import numpy as np
 data_point = collections.namedtuple('data_point', ['dt', 'flow', 'ds', 'amount'])
 
 
+class EmptyTimeline(StandardError):
+    pass
+
+
 class Timeline(object):
     """Sum and group elements over time.
 
@@ -44,6 +48,8 @@ class Timeline(object):
     def characterize_static(self, method, data=None, cumulative=True, stepped=False):
         if method not in methods:
             raise ValueError(u"LCIA static method %s not found" % unicode(method))
+        if data is None and not self.raw:
+            raise EmptyTimeline("No data to characterize")
         method_data = {x[0]: x[1] for x in Method(method).load()}
         self.characterized = [
             data_point(nt.dt, nt.flow, nt.ds, nt.amount * method_data.get(nt.flow, 0))
@@ -55,6 +61,8 @@ class Timeline(object):
     def characterize_dynamic(self, method, data=None, cumulative=True, stepped=False):
         if method not in dynamic_methods:
             raise ValueError(u"LCIA dynamic method %s not found" % unicode(method))
+        if data is None and not self.raw:
+            raise EmptyTimeline("No data to characterize")
         method = DynamicIAMethod(method)
         method_data = method.load()
         method_functions = method.create_functions(method_data)
