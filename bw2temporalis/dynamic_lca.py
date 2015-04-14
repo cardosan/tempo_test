@@ -2,7 +2,7 @@ from .temporal_distribution import TemporalDistribution
 from .timeline import Timeline
 from bw2analyzer import GTManipulator
 from bw2calc import GraphTraversal
-from bw2data import Database
+from bw2data import Database, get_activity
 from bw2data.logs import get_logger
 from heapq import heappush, heappop
 import arrow
@@ -143,10 +143,10 @@ class DynamicLCA(object):
             return
         scale_value = self.get_scale_value(ds)
 
-        data = Database(ds[0]).load()[ds]
+        data = get_activity(ds)
         if not data.get('type', 'process') == "process":
             return
-        for exc in data.get('exchanges', []):
+        for exc in data.exchanges():
             if not exc.get("type") == "biosphere":
                 continue
             bio_td = self.get_temporal_distribution(exc)
@@ -175,7 +175,7 @@ class DynamicLCA(object):
     def check_absolute_datetime(self, ds, dt):
         if ds == "Functional unit":
             return dt
-        ds_data = Database(ds[0]).load()[ds]
+        ds_data = get_activity(ds)
         absolute = "absolute date" in ds_data
         self.log.info("check_absolute: %s (%s)" % (absolute, ds))
         if "absolute date" in ds_data:
@@ -189,10 +189,13 @@ class DynamicLCA(object):
         # can vary, or even be negative.
         # Don't test for zero values, as edges come from GraphTraversal
         # which already does this test.
+        # TODO: Do we need to look up the reference product?
+        # It is not necessarily the same as the activity,
+        # but maybe this breaks many things in the graph traversal
         if ds != "Functional unit":
             return float(self.lca.technosphere_matrix[
-                self.lca.technosphere_dict[ds],
-                self.lca.technosphere_dict[ds]
+                self.lca.product_dict[ds],
+                self.lca.activity_dict[ds]
             ])
         else:
             return 1
