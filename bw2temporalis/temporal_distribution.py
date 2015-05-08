@@ -53,7 +53,7 @@ class TemporalDistribution(object):
                                  % type(other))
 
     def __iter__(self):
-        for index in xrange(self.times.shape[0]):
+        for index in range(self.times.shape[0]):
             yield (float(self.times[index]), float(self.values[index]))
 
     @property

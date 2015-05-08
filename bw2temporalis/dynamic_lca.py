@@ -106,7 +106,7 @@ class DynamicLCA(object):
         edges = {}
         for database in self.lca.databases:
             db_data = Database(database).load()
-            for key, value in db_data.iteritems():
+            for key, value in db_data.items():
                 if value.get("type", "process") != "process":
                     continue
                 for exc in value.get(u"exchanges", []):

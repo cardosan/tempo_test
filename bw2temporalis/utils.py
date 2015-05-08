@@ -22,7 +22,7 @@ def check_temporal_distribution_totals(name):
     """Check that temporal distributions sum to total `amount` value"""
     data = Database(name).load()
     errors = []
-    for key, value in data.iteritems():
+    for key, value in data.items():
         if value.get('type', 'process') != 'process':
             continue
         for exchange in value.get('exchanges', []):

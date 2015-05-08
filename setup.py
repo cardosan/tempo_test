@@ -15,7 +15,6 @@ setup(
         "bw2calc>=0.11",
         "bw2data>=0.12",
         "bw2speedups>=2.0",
-        "progressbar-ipython",
         "stats_arrays",
     ],
     description='Provide a dynamic LCA calculations for the Brightway2 life cycle assessment framework',

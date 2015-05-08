@@ -89,13 +89,13 @@ class TemporalDistributionTestCase(unittest.TestCase):
 
     def test_iter(self):
         td = iter(self.create_td())
-        self.assertEqual(td.next(), (0, 2))
-        self.assertEqual(td.next(), (1, 2))
-        self.assertEqual(td.next(), (2, 2))
-        self.assertEqual(td.next(), (3, 2))
-        self.assertEqual(td.next(), (4, 2))
+        self.assertEqual(next(td), (0, 2))
+        self.assertEqual(next(td), (1, 2))
+        self.assertEqual(next(td), (2, 2))
+        self.assertEqual(next(td), (3, 2))
+        self.assertEqual(next(td), (4, 2))
         with self.assertRaises(StopIteration):
-            td.next()
+            next(td)
 
     def test_representation(self):
         repr(self.create_td())

@@ -18,11 +18,6 @@ class DynamicIAMethod(DataStore):
     """A dynamic impact assessment method. Not translated into matrices, so no ``process`` method."""
     metadata = dynamic_methods
 
-    def process(self):
-        """Dynamic CFs can't be translated into a matrix, so this is a no-op."""
-        warnings.warn("Dynamic CFs can't be processed; doing nothing")
-        return
-
     def to_worst_case_method(self, name, lower=None, upper=None):
         """Create a static LCA method using the worst case for each dynamic CF function.
 
@@ -38,10 +33,10 @@ class DynamicIAMethod(DataStore):
             if worst_case_method.name not in methods:
                 worst_case_method.register(dynamic_method = self.name)
         data = self.load()
-        data.update(**self.create_functions())
+        data.update(self.create_functions())
         worst_case_method.write([
             [key, abs(get_maximum_value(value, **kwargs))]
-            for key, value in data.iteritems()
+            for key, value in data.items()
         ])
         worst_case_method.process()
         return worst_case_method
@@ -53,9 +48,9 @@ class DynamicIAMethod(DataStore):
         counter = itertools.count()
         prefix = u"created_function_%s_" % random_string()
         functions = {}
-        for key, value in data.iteritems():
+        for key, value in data.items():
             if isinstance(value, basestring):
-                name = prefix + str(counter.next())
+                name = prefix + str(next(counter))
                 value = value % name
                 exec(value)
                 functions[key] = locals()[name]
