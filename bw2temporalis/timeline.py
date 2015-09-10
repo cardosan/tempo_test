@@ -8,7 +8,7 @@ import numpy as np
 data_point = collections.namedtuple('data_point', ['dt', 'flow', 'ds', 'amount'])
 
 
-class EmptyTimeline(StandardError):
+class EmptyTimeline(Exception):
     pass
 
 
