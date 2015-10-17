@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from .utils import get_maximum_value
 from bw2data import DataStore, Method, methods
 from bw2data.serialization import SerializedDict
@@ -16,7 +20,7 @@ dynamic_methods = DynamicMethods()
 
 class DynamicIAMethod(DataStore):
     """A dynamic impact assessment method. Not translated into matrices, so no ``process`` method."""
-    metadata = dynamic_methods
+    _metadata = dynamic_methods
 
     def to_worst_case_method(self, name, lower=None, upper=None):
         """Create a static LCA method using the worst case for each dynamic CF function.

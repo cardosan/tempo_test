@@ -1,207 +1,212 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
+
 db_data = {
-    (u'temp-example-db', "CO2"): {
+    ('temp-example-db', "CO2"): {
         "type": "emission"
     },
-    (u'temp-example-db', "CH4"): {
+    ('temp-example-db', "CH4"): {
         "type": "emission"
     },
-    (u'temp-example-db', u'Functional Unit'): {
-        u'exchanges': [
+    ('temp-example-db', 'Functional Unit'): {
+        'exchanges': [
             {
-                u'amount': 5,
-                u'input': (u'temp-example-db', u'EOL'),
-                u'temporal distribution': [
+                'amount': 5,
+                'input': ('temp-example-db', 'EOL'),
+                'temporal distribution': [
                     (0, 1),
                     (1, 1),
                     (2, 1),
                     (3, 1),
                     (4, 1)
                 ],
-                u'type': u'technosphere'
+                'type': 'technosphere'
             },
         ],
-        u'name': u'Functional Unit',
+        'name': 'Functional Unit',
         'type': 'process'
     },
-    (u'temp-example-db', u'EOL'): {
-        u'exchanges': [
+    ('temp-example-db', 'EOL'): {
+        'exchanges': [
             {
-                u'amount': 0.8,
-                u'input': (u'temp-example-db', u'Waste'),
-                u'type': u'technosphere'
+                'amount': 0.8,
+                'input': ('temp-example-db', 'Waste'),
+                'type': 'technosphere'
             },
             {
-                u'amount': 0.2,
-                u'input': (u'temp-example-db', u'Landfill'),
-                u'type': u'technosphere'
+                'amount': 0.2,
+                'input': ('temp-example-db', 'Landfill'),
+                'type': 'technosphere'
             },
             {
-                u'amount': 1,
-                u'input': (u'temp-example-db', u'Use'),
-                u'type': u'technosphere'
+                'amount': 1,
+                'input': ('temp-example-db', 'Use'),
+                'type': 'technosphere'
             },
         ],
-        u'name': u'EOL',
+        'name': 'EOL',
         'type': 'process'
     },
-    (u'temp-example-db', u'Use'): {
-        u'exchanges': [
+    ('temp-example-db', 'Use'): {
+        'exchanges': [
             {
-                u'amount': 1,
-                u'input': (u'temp-example-db', u'Production'),
-                u'temporal distribution': [(-0.5, 1)],
-                u'type': u'technosphere'
+                'amount': 1,
+                'input': ('temp-example-db', 'Production'),
+                'temporal distribution': [(-0.5, 1)],
+                'type': 'technosphere'
             },
         ],
-        u'name': u'Use',
+        'name': 'Use',
         'type': 'process'
     },
-    (u'temp-example-db', u'Production'): {
-        u'exchanges': [
+    ('temp-example-db', 'Production'): {
+        'exchanges': [
             {
-                u'amount': 1,
-                u'input': (u'temp-example-db', u'Transport'),
-                u'temporal distribution': [(-0.1, 1)],
-                u'type': u'technosphere'
+                'amount': 1,
+                'input': ('temp-example-db', 'Transport'),
+                'temporal distribution': [(-0.1, 1)],
+                'type': 'technosphere'
             },
         ],
-        u'name': u'Production',
+        'name': 'Production',
         'type': 'process'
     },
-    (u'temp-example-db', u'Transport'): {
-        u'exchanges': [
+    ('temp-example-db', 'Transport'): {
+        'exchanges': [
             {
-                u'amount': 1,
-                u'input': (u'temp-example-db', u'Sawmill'),
-                u'type': u'technosphere'
+                'amount': 1,
+                'input': ('temp-example-db', 'Sawmill'),
+                'type': 'technosphere'
             },
             {
-                u'amount': 0.1,
-                u'input': (u'temp-example-db', u'CO2'),
-                u'type': u'biosphere'
+                'amount': 0.1,
+                'input': ('temp-example-db', 'CO2'),
+                'type': 'biosphere'
             },
         ],
-        u'name': u'Production',
+        'name': 'Production',
         'type': 'process'
     },
-    (u'temp-example-db', u'Sawmill'): {
-        u'exchanges': [
+    ('temp-example-db', 'Sawmill'): {
+        'exchanges': [
             {
-                u'amount': 1.2,
-                u'input': (u'temp-example-db', u'Forest'),
-                u'temporal distribution': [(-0.5, 1.2)],
-                u'type': u'technosphere'
+                'amount': 1.2,
+                'input': ('temp-example-db', 'Forest'),
+                'temporal distribution': [(-0.5, 1.2)],
+                'type': 'technosphere'
             },
             {
-                u'amount': 0.1,
-                u'input': (u'temp-example-db', u'CO2'),
-                u'type': u'biosphere'
+                'amount': 0.1,
+                'input': ('temp-example-db', 'CO2'),
+                'type': 'biosphere'
             },
         ],
-        u'name': u'Sawmill',
+        'name': 'Sawmill',
         'type': 'process'
     },
-    (u'temp-example-db', u'Forest'): {
-        u'exchanges': [
+    ('temp-example-db', 'Forest'): {
+        'exchanges': [
             {
-                u'amount': -.2 * 6,
-                u'input': (u'temp-example-db', u'CO2'),
-                u'temporal distribution': [(x, -.2) for x in (0, 5, 10, 15, 20, 30)],
-                u'type': u'biosphere'
+                'amount': -.2 * 6,
+                'input': ('temp-example-db', 'CO2'),
+                'temporal distribution': [(x, -.2) for x in (0, 5, 10, 15, 20, 30)],
+                'type': 'biosphere'
             },
             {
-                u'amount': 1.5,
-                u'input': (u'temp-example-db', u'Thinning'),
-                u'temporal distribution': [
+                'amount': 1.5,
+                'input': ('temp-example-db', 'Thinning'),
+                'temporal distribution': [
                     (5, .5),
                     (10, .5),
                     (15, .5),
                 ],
-                u'type': u'technosphere'
+                'type': 'technosphere'
             },
         ],
-        u'name': u'Forest',
+        'name': 'Forest',
         'type': 'process'
     },
-    (u'temp-example-db', u'Thinning'): {
-        u'exchanges': [
+    ('temp-example-db', 'Thinning'): {
+        'exchanges': [
             {
-                u'amount': 1,
-                u'input': (u'temp-example-db', u'Thinning'),
-                u'type': u'production'
+                'amount': 1,
+                'input': ('temp-example-db', 'Thinning'),
+                'type': 'production'
             },
             {
-                u'amount': 1,
-                u'input': (u'temp-example-db', u'Avoided impact - thinnings'),
-                u'type': u'production'
+                'amount': 1,
+                'input': ('temp-example-db', 'Avoided impact - thinnings'),
+                'type': 'production'
             },
         ],
-        u'name': u'Thinning',
+        'name': 'Thinning',
         'type': 'process'
     },
-    (u'temp-example-db', u'Landfill'): {
-        u'exchanges': [
+    ('temp-example-db', 'Landfill'): {
+        'exchanges': [
             {
-                u'amount': 0.1,
-                u'input': (u'temp-example-db', u'CH4'),
-                u'temporal distribution': [
+                'amount': 0.1,
+                'input': ('temp-example-db', 'CH4'),
+                'temporal distribution': [
                     (20, 0.025),
                     (30, 0.025),
                     (40, 0.025),
                     (50, 0.025)
                 ],
-                u'type': u'biosphere'
+                'type': 'biosphere'
             },
         ],
-        u'name': u'Landfill',
+        'name': 'Landfill',
         'type': 'process'
     },
-    (u'temp-example-db', u'Waste'): {
-        u'exchanges': [
+    ('temp-example-db', 'Waste'): {
+        'exchanges': [
             {
-                u'amount': 1,
-                u'input': (u'temp-example-db', u'Waste'),
-                u'type': u'production'
+                'amount': 1,
+                'input': ('temp-example-db', 'Waste'),
+                'type': 'production'
             },
             {
-                u'amount': 1,
-                u'input': (u'temp-example-db', u'Avoided impact - waste'),
-                u'type': u'production'
+                'amount': 1,
+                'input': ('temp-example-db', 'Avoided impact - waste'),
+                'type': 'production'
             },
         ],
-        u'name': u'Waste',
+        'name': 'Waste',
         'type': 'process'
     },
-    (u'temp-example-db', u'Avoided impact - waste'): {
-        u'exchanges': [
+    ('temp-example-db', 'Avoided impact - waste'): {
+        'exchanges': [
             {
-                u'amount': -0.6,
-                u'input': (u'temp-example-db', u'CO2'),
-                u'type': u'biosphere'
+                'amount': -0.6,
+                'input': ('temp-example-db', 'CO2'),
+                'type': 'biosphere'
             },
             {
-                u'amount': 1,
-                u'input': (u'temp-example-db', u'Avoided impact - waste'),
-                u'type': u'production'
+                'amount': 1,
+                'input': ('temp-example-db', 'Avoided impact - waste'),
+                'type': 'production'
             },
         ],
-        u'name': u'Avoided impact - waste',
+        'name': 'Avoided impact - waste',
         'type': 'process'
     },
-    (u'temp-example-db', u'Avoided impact - thinnings'): {
-        u'exchanges': [
+    ('temp-example-db', 'Avoided impact - thinnings'): {
+        'exchanges': [
             {
-                u'amount': -0.2,
-                u'input': (u'temp-example-db', u'CO2'),
-                u'type': u'biosphere'
+                'amount': -0.2,
+                'input': ('temp-example-db', 'CO2'),
+                'type': 'biosphere'
             },
             {
-                u'amount': 1,
-                u'input': (u'temp-example-db', u'Avoided impact - thinnings'),
-                u'type': u'production'
+                'amount': 1,
+                'input': ('temp-example-db', 'Avoided impact - thinnings'),
+                'type': 'production'
             },
         ],
-        u'name': u'Avoided impact - thinnings',
+        'name': 'Avoided impact - thinnings',
         'type': 'process'
     }
 }

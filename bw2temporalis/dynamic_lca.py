@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from .temporal_distribution import TemporalDistribution
 from .timeline import Timeline
 from bw2analyzer import GTManipulator
@@ -59,14 +63,14 @@ class DynamicLCA(object):
         )
         self.gt_edges = self.translate_edges(self.gt_results['edges'])
 
-        self.log.info(u"Starting dynamic LCA")
-        self.log.info(u"Demand: %s" % self.demand)
-        self.log.info(u"Worst case method: %s" % unicode(self.worst_case_method))
-        self.log.info(u"Start datetime: %s" % self.now.isoformat())
-        self.log.info(u"Maximum calculations: %i" % self.max_calc_number)
-        self.log.info(u"Worst case LCA score: %.4g." % self.lca.score)
-        self.log.info(u"Cutoff value (fraction): %.4g." % self.cutoff_value)
-        self.log.info(u"Cutoff score: %.4g." % self.cutoff)
+        self.log.info("Starting dynamic LCA")
+        self.log.info("Demand: %s" % self.demand)
+        self.log.info("Worst case method: %s" % self.worst_case_method)
+        self.log.info("Start datetime: %s" % self.now.isoformat())
+        self.log.info("Maximum calculations: %i" % self.max_calc_number)
+        self.log.info("Worst case LCA score: %.4g." % self.lca.score)
+        self.log.info("Cutoff value (fraction): %.4g." % self.cutoff_value)
+        self.log.info("Cutoff score: %.4g." % self.cutoff)
         self.log.debug("NODES: " + pprint.pformat(self.gt_nodes))
         self.log.debug("EDGES: " + pprint.pformat(self.gt_edges))
 
@@ -104,18 +108,18 @@ class DynamicLCA(object):
 
     def get_temporal_edges(self):
         edges = {}
-        for database in self.lca.databases:
-            db_data = Database(database).load()
-            for key, value in db_data.items():
-                if value.get("type", "process") != "process":
+        all_databases = set.union(*[Database(key[0]).find_graph_dependents() for key in self.demand])
+        for name in all_databases:
+            for ds in Database(name):
+                if ds.get("type", "process") != "process":
                     continue
-                for exc in value.get(u"exchanges", []):
+                for exc in ds.exchanges():
                     # Have to be careful here, because can have
                     # multiple exchanges with same input/output
-                    # Sum up multiple edges with same input, if presents
-                    edges[(exc[u'input'], key)] = (
+                    # Sum up multiple edges with same input, if present
+                    edges[(exc['input'], ds.key)] = (
                         self.get_temporal_distribution(exc) +
-                        edges.get((exc[u'input'], key), 0))
+                        edges.get((exc['input'], ds.key), 0))
         return edges
 
     def get_temporal_distribution(self, exc):

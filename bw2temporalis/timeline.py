@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from .dynamic_ia_methods import DynamicIAMethod, dynamic_methods
 from bw2data import Method, methods
 import collections
@@ -8,7 +12,7 @@ import numpy as np
 data_point = collections.namedtuple('data_point', ['dt', 'flow', 'ds', 'amount'])
 
 
-class EmptyTimeline(StandardError):
+class EmptyTimeline(Exception):
     pass
 
 

@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from ..temporal_distribution import TemporalDistribution as TD
 import numpy as np
 import unittest
@@ -99,9 +103,6 @@ class TemporalDistributionTestCase(unittest.TestCase):
 
     def test_representation(self):
         repr(self.create_td())
-
-    def test_unicode(self):
-        unicode(self.create_td())
 
     def test_str(self):
         str(self.create_td())

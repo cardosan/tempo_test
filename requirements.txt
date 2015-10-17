@@ -4,6 +4,7 @@ bw2analyzer>=0.5.1
 bw2calc>=0.14.1
 bw2data>=0.17
 colorama
+eight
 nose
 numpy>=1.6
 progressbar-ipython

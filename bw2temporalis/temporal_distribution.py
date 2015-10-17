@@ -1,7 +1,13 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from bw2speedups import consolidate
+from future.utils import python_2_unicode_compatible
 import numpy as np
 
 
+@python_2_unicode_compatible
 class TemporalDistribution(object):
     """An container for a series of values spread over time."""
     def __init__(self, times, values):
@@ -32,6 +38,7 @@ class TemporalDistribution(object):
                                  % type(other))
 
     def __div__(self, other):
+        # Python 2
         try:
             other = float(other)
         except:
@@ -39,6 +46,10 @@ class TemporalDistribution(object):
                 u"Can only divide a TemporalDistribution by a number"
             )
         return TemporalDistribution(self.times, self.values / other)
+
+    def __truediv__(self, other):
+        # Python 3
+        return self.__div__(other)
 
     def __add__(self, other):
         if isinstance(other, TemporalDistribution):
@@ -60,13 +71,10 @@ class TemporalDistribution(object):
     def total(self):
         return float(self.values.sum())
 
-    def __unicode__(self):
-        return u"TemporalDistribution instance with %s values and total: %.4g" % (
+    def __str__(self):
+        return "TemporalDistribution instance with %s values and total: %.4g" % (
             len(self.values), self.total)
 
     def __repr__(self):
-        return u"TemporalDistribution instance with %s values (total: %.4g, min: %.4g, max: %.4g" % (
+        return "TemporalDistribution instance with %s values (total: %.4g, min: %.4g, max: %.4g" % (
             len(self.values), self.total, self.values.min(), self.values.max())
-
-    def __str__(self):
-        return unicode(self).encode('utf-8')

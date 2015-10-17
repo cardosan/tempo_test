@@ -1,15 +1,17 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+from eight import *
+
 from ..dynamic_ia_methods import DynamicIAMethod, dynamic_methods
 from ..dynamic_lca import DynamicLCA
-from brightway2 import Database, Method, LCA, config, databases, methods
+from bw2data import Database, Method, databases, methods
+from bw2calc import LCA
 from bw2data.tests import BW2DataTest as BaseTestCase
 import arrow
 import numpy as np
 
 
 class DynamicLCATestCase(BaseTestCase):
-    def extra_setup(self):
-        dynamic_methods.__init__()
-
     def create_methods(self):
         gw = [
             [("b", "bad"), 1],
@@ -26,16 +28,14 @@ class DynamicLCATestCase(BaseTestCase):
     def get_static_score(self, fu, dmethod, method):
         dynamic_lca = DynamicLCA(
             demand=fu,
-            dynamic_method=dmethod,
             worst_case_method=method,
             now=arrow.now(),
         )
         dynamic_lca.calculate()
         dynamic_lca.timeline.characterize_static(method)
 
-        print dynamic_lca.gt_edges
-
-        print dynamic_lca.timeline.raw
+        print(dynamic_lca.gt_edges)
+        print(dynamic_lca.timeline.raw)
 
         return sum([x.amount for x in dynamic_lca.timeline.characterized])
 
@@ -56,22 +56,22 @@ class DynamicLCATestCase(BaseTestCase):
             ("b", "bad"): {
                 'type': 'emission'
             },
-            (u'b', u'first'): {
-                u'exchanges': [
+            ('b', 'first'): {
+                'exchanges': [
                     {
-                        u'amount': 1,
-                        u'input': (u'b', u'second'),
-                        u'type': u'technosphere'
+                        'amount': 1,
+                        'input': ('b', 'second'),
+                        'type': 'technosphere'
                     },
                 ],
                 'type': 'process',
             },
-            (u'b', u'second'): {
-                u'exchanges': [
+            ('b', 'second'): {
+                'exchanges': [
                     {
-                        u'amount': 2,
-                        u'input': (u'b', u'bad'),
-                        u'type': u'biosphere'
+                        'amount': 2,
+                        'input': ('b', 'bad'),
+                        'type': 'biosphere'
                     },
                 ],
                 'type': 'process',
@@ -92,24 +92,24 @@ class DynamicLCATestCase(BaseTestCase):
             ("b", "bad"): {
                 'type': 'emission'
             },
-            (u'b', u'first'): {
-                u'exchanges': [
+            ('b', 'first'): {
+                'exchanges': [
                     {
-                        u'amount': 10,
-                        u'input': (u'b', u'second'),
-                        u"temporal distribution": [(x, 1) for x in range(10)],
-                        u'type': u'technosphere'
+                        'amount': 10,
+                        'input': ('b', 'second'),
+                        "temporal distribution": [(x, 1) for x in range(10)],
+                        'type': 'technosphere'
                     },
                 ],
                 'type': 'process',
             },
-            (u'b', u'second'): {
-                u'exchanges': [
+            ('b', 'second'): {
+                'exchanges': [
                     {
-                        u'amount': 2,
-                        u'input': (u'b', u'bad'),
-                        u"temporal distribution": [(x, 0.5) for x in range(4)],
-                        u'type': u'biosphere'
+                        'amount': 2,
+                        'input': ('b', 'bad'),
+                        "temporal distribution": [(x, 0.5) for x in range(4)],
+                        'type': 'biosphere'
                     },
                 ],
                 'type': 'process',
@@ -130,27 +130,27 @@ class DynamicLCATestCase(BaseTestCase):
             ("b", "bad"): {
                 'type': 'emission'
             },
-            (u'b', u'first'): {
-                u'exchanges': [
+            ('b', 'first'): {
+                'exchanges': [
                     {
-                        u'amount': 1,
-                        u'input': (u'b', u'second'),
-                        u'type': u'technosphere'
+                        'amount': 1,
+                        'input': ('b', 'second'),
+                        'type': 'technosphere'
                     },
                 ],
                 'type': 'process',
             },
-            (u'b', u'second'): {
-                u'exchanges': [
+            ('b', 'second'): {
+                'exchanges': [
                     {
-                        u'amount': 2,
-                        u'input': (u'b', u'bad'),
-                        u'type': u'biosphere'
+                        'amount': 2,
+                        'input': ('b', 'bad'),
+                        'type': 'biosphere'
                     },
                     {
-                        u'amount': 10,
-                        u'input': (u'b', u'second'),
-                        u'type': u'production'
+                        'amount': 10,
+                        'input': ('b', 'second'),
+                        'type': 'production'
                     },
                 ],
                 'type': 'process',
@@ -172,49 +172,54 @@ class DynamicLCATestCase(BaseTestCase):
             ("b", "bad"): {
                 'type': 'emission'
             },
-            (u'b', u'first'): {
-                u'exchanges': [
+            ('b', 'first'): {
+                'exchanges': [
                     {
-                        u'amount': 1,
-                        u'input': (u'b', u'second'),
-                        u'type': u'technosphere'
+                        'amount': 1,
+                        'input': ('b', 'second'),
+                        'type': 'technosphere'
+                    },
+                    {
+                        'amount': 1,
+                        'input': ('b', 'first'),
+                        'type': 'production'
                     },
                 ],
                 'type': 'process',
                 'name': 'first',
             },
-            (u'b', u'second'): {
-                u'exchanges': [
+            ('b', 'second'): {
+                'exchanges': [
                     {
-                        u'amount': 2,
-                        u'input': (u'b', u'bad'),
-                        u'type': u'biosphere'
+                        'amount': 2,
+                        'input': ('b', 'bad'),
+                        'type': 'biosphere'
                     },
                     {
-                        u'amount': 4,
-                        u'input': (u'b', u'second'),
-                        u'type': u'production'
+                        'amount': 4,
+                        'input': ('b', 'second'),
+                        'type': 'production'
                     },
                     {
-                        u'amount': 5,
-                        u'input': (u'b', u'third'),
-                        u'type': u'production'
+                        'amount': 5,
+                        'input': ('b', 'third'),
+                        'type': 'production'
                     },
                 ],
                 'type': 'process',
                 'name': 'second',
             },
-            (u'b', u'third'): {
-                u'exchanges': [
+            ('b', 'third'): {
+                'exchanges': [
                     {
-                        u'amount': 10,
-                        u'input': (u'b', u'bad'),
-                        u'type': u'biosphere'
+                        'amount': 10,
+                        'input': ('b', 'bad'),
+                        'type': 'biosphere'
                     },
                     {
-                        u'amount': 20,
-                        u'input': (u'b', u'third'),
-                        u'type': u'production'
+                        'amount': 20,
+                        'input': ('b', 'third'),
+                        'type': 'production'
                     },
                 ],
                 'type': 'process',
@@ -229,7 +234,7 @@ class DynamicLCATestCase(BaseTestCase):
         dynamic_score = self.get_static_score(fu, dmethod, method),
         static_score = self.get_lca_score(fu, method)
 
-        print static_score, dynamic_score
+        print(static_score, dynamic_score)
 
         self.assertTrue(np.allclose(static_score, 2 / 4. - 5 / 4. * 10. / 20.))
         self.assertTrue(np.allclose(static_score, dynamic_score))
