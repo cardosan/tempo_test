@@ -6,7 +6,7 @@ from .temporal_distribution import TemporalDistribution
 from .timeline import Timeline
 from bw2analyzer import GTManipulator
 from bw2calc import GraphTraversal
-from bw2data import Database, get_activity
+from bw2data import Database, get_activity, databases
 from bw2data.logs import get_logger
 from heapq import heappush, heappop
 import arrow
@@ -54,6 +54,8 @@ class DynamicLCA(object):
             **self.gt_kwargs
         )
         self.lca = self.gt_results['lca']
+        _, _, self.reverse_bio_dict = self.lca.reverse_dict()
+
         self.temporal_edges = self.get_temporal_edges()
         self.add_func_unit_to_temporal_edges()
         self.cutoff = abs(self.lca.score) * self.cutoff_value
@@ -65,7 +67,7 @@ class DynamicLCA(object):
 
         self.log.info("Starting dynamic LCA")
         self.log.info("Demand: %s" % self.demand)
-        self.log.info("Worst case method: %s" % self.worst_case_method)
+        self.log.info("Worst case method: %s" % str(self.worst_case_method))
         self.log.info("Start datetime: %s" % self.now.isoformat())
         self.log.info("Maximum calculations: %i" % self.max_calc_number)
         self.log.info("Worst case LCA score: %.4g." % self.lca.score)
@@ -109,7 +111,10 @@ class DynamicLCA(object):
     def get_temporal_edges(self):
         edges = {}
         all_databases = set.union(*[Database(key[0]).find_graph_dependents() for key in self.demand])
+        self.static_databases = {name for name in all_databases if databases[name].get('static')}
         for name in all_databases:
+            if name in self.static_databases:
+                continue
             for ds in Database(name):
                 if ds.get("type", "process") != "process":
                     continue
@@ -150,6 +155,21 @@ class DynamicLCA(object):
         data = get_activity(ds)
         if not data.get('type', 'process') == "process":
             return
+
+        if data['database'] in self.static_databases:
+            # Add cumulated inventory; no need to traverse static database
+            self.lca.redo_lci({data: 1})
+            inventory_vector = np.array(self.lca.inventory.sum(axis=1)).ravel()
+            for index, amount in enumerate(inventory_vector):
+                if not amount:
+                    continue
+                flow = self.reverse_bio_dict[index]
+                for tech_year_delta, tech_amount in tech_td:
+                    occurs = dt + self.to_timedelta(tech_year_delta)
+                    self.timeline.add(occurs, flow, ds,
+                                      tech_amount * amount / scale_value)
+            return
+
         for exc in data.exchanges():
             if not exc.get("type") == "biosphere":
                 continue
@@ -162,6 +182,8 @@ class DynamicLCA(object):
                                       tech_amount * bio_amount / scale_value)
 
     def tech_edges_from_node(self, node):
+        if node[0] in self.static_databases:
+            return []
         return (edge for edge in self.gt_edges if edge['to'] == node)
 
     def discard_node(self, node, amount):

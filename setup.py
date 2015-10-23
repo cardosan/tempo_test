@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='bw2temporalis',
-    version="0.7",
+    version="0.8",
     packages=[
         "bw2temporalis",
         "bw2temporalis.tests",
