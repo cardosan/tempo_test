@@ -78,7 +78,7 @@ static_cfs = [
 ]
 
 dynamic_cfs  = {
-    ("temp-example-db", "CO2"): """def %s(dt):
+    ("temp-example-db", "CO2"): """def marginal_CO2_function(dt):
     from bw2temporalis.examples import marginal_CO2
     from datetime import timedelta
     import collections
@@ -88,7 +88,7 @@ dynamic_cfs  = {
     cfs = marginal_CO2(xs)
     return [return_tuple(dt + timedelta(days=365.24 * x), float(cfs[x])) for x in xs]
     """,
-    ("temp-example-db", "CH4"): """def %s(dt):
+    ("temp-example-db", "CH4"): """def marginal_CH4_function(dt):
     from bw2temporalis.examples import marginal_CH4
     from datetime import timedelta
     import collections
@@ -101,7 +101,7 @@ dynamic_cfs  = {
 }
 
 dynamic_discounted_cfs = {
-    ("temp-example-db", "CO2"): """def %s(dt):
+    ("temp-example-db", "CO2"): """def discounted_CO2_function(dt):
     from bw2temporalis.examples import marginal_CO2, linear_decrease_weight
     from datetime import timedelta
     import collections
@@ -112,7 +112,7 @@ dynamic_discounted_cfs = {
     data = [(dt + timedelta(days=365.24 * x), float(cfs[x])) for x in xs]
     return [return_tuple(x, y * linear_decrease_weight(x)) for x, y in data]
     """,
-    ("temp-example-db", "CH4"): """def %s(dt):
+    ("temp-example-db", "CH4"): """def discounter_CH4_function(dt):
     from bw2temporalis.examples import marginal_CH4, linear_decrease_weight
     from datetime import timedelta
     import collections

@@ -2,12 +2,23 @@
 from __future__ import print_function, unicode_literals
 from eight import *
 
-from .utils import get_maximum_value
+from .utils import get_maximum_value, get_function_name
 from bw2data import DataStore, Method, methods
 from bw2data.serialization import SerializedDict
 from bw2data.utils import random_string
-import itertools
 import warnings
+
+
+class FunctionWrapper(object):
+    def __init__(self, func_string):
+        self.func_name = get_function_name(func_string)
+        if not self.func_name:
+            raise ValueError
+        exec(func_string)
+        self.function = locals()[self.func_name]
+
+    def __call__(self, *args, **kwargs):
+        return self.function(*args, **kwargs)
 
 
 class DynamicMethods(SerializedDict):
@@ -49,13 +60,16 @@ class DynamicIAMethod(DataStore):
         """Take method data that defines functions in strings, and turn them into actual Python code. Returns a dictionary with flows as keys and functions as values."""
         if data is None:
             data = self.load()
-        counter = itertools.count()
-        prefix = u"created_function_%s_" % random_string()
+        prefix = "created_function_{}_".format(random_string())
         functions = {}
         for key, value in data.items():
-            if isinstance(value, basestring):
-                name = prefix + str(next(counter))
-                value = value % name
-                exec(value)
-                functions[key] = locals()[name]
+            if isinstance(value, str):
+                # Backwards compatibility
+                if '%s' in value:
+                    warnings.warn(
+                        "Functions can now be normal Python code; please change def %s() to def some_name().",
+                        DeprecationWarning
+                    )
+                    value = value % "created_function"
+                functions[key] = FunctionWrapper(value)
         return functions

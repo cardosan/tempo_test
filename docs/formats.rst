@@ -90,14 +90,14 @@ Dynamic characterization factors are realized with pure python functions, e.g.
 However, there are some things to bear in mind with dynamic characterization functions:
 
 * Dynamic characterization functions must take a datetime as the single input, and return a single numeric characterization factor.
-* * You will need to import whatever you need in the body of the function; don't assume anything other than the standard library is in the current namespace.
-* Functions have to be defined in a slightly funny way. They should not be defined by name. Instead, they should have a name of "``%s``" that can be generated automatically and substituted by the temporalis library, i.e. ``def %s(datetime)``. This dynamicity is needed to avoid name conflicts.
+* You will need to import whatever you need in the body of the function; don't assume anything other than the standard library is in the current namespace.
 * These functions must be stored as **unicode strings**, not actual python code:
 
 .. code-block:: python
 
     {
-        ("omg", "wtf-bbq"): """def %s(datetime):
+        ("omg", "wtf-bbq"): """def some_func(datetime):
+    import arrow
     return (arrow.get(datetime) - arrow.get(2011, 6, 23)).days"""
     }
 

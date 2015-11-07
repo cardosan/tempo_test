@@ -7,6 +7,7 @@ from numbers import Number
 import arrow
 import numpy as np
 import warnings
+import re
 
 
 def get_maximum_value(maybe_func, lower=arrow.get(2000, 1, 1), upper=arrow.get(2100, 1, 1)):
@@ -45,3 +46,17 @@ def check_temporal_distribution_totals(name):
         return errors
     else:
         return True
+
+
+function_re = re.compile("^def\s+(?P<func_name>\S+)\s*\(\s*\S*\s*(?:,\s*\S+)*\):", re.UNICODE)
+
+
+def get_function_name(string):
+    """Use a regular expression to extract the name of a Python function.
+
+    Returns None is no function is found in ``string``."""
+    match = function_re.match(string)
+    if not match:
+        return None
+    else:
+        return match.groupdict()['func_name']
