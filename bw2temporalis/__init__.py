@@ -9,7 +9,7 @@ __all__ = [
     'Timeline',
 ]
 
-__version__ = (0, 8)
+__version__ = (0, 9)
 
 
 from bw2data import config
