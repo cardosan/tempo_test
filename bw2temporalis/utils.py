@@ -10,8 +10,12 @@ import warnings
 import re
 
 
-def get_maximum_value(maybe_func, lower=arrow.get(2000, 1, 1), upper=arrow.get(2100, 1, 1)):
+def get_maximum_value(maybe_func, lower=None, upper=None, dynamic=True):
     """Get maximum CF values by calculating each week for 100 years. Poor computers."""
+    if lower is None:
+        lower = arrow.get(2000, 1, 1)
+    if upper is None:
+        upper = arrow.get(2100, 1, 1)
     if isinstance(maybe_func, Number):
         return maybe_func
     def _(obj):
@@ -19,8 +23,13 @@ def get_maximum_value(maybe_func, lower=arrow.get(2000, 1, 1), upper=arrow.get(2
             return obj
         else:
             return sum([x.amount for x in obj])
-    return max([_(maybe_func(x))
-        for x in arrow.Arrow.range('week', lower, upper)])
+    if dynamic:
+        return max([_(maybe_func(x))
+            for x in arrow.Arrow.range('week', lower, upper)])
+    else:
+        # If total CF not a function of time of emission,
+        # don't need to do all this work...
+        return _(maybe_func(lower))
 
 
 def check_temporal_distribution_totals(name):
