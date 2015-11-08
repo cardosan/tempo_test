@@ -51,7 +51,7 @@ class Timeline(object):
 
     def characterize_static(self, method, data=None, cumulative=True, stepped=False):
         if method not in methods:
-            raise ValueError(u"LCIA static method %s not found" % unicode(method))
+            raise ValueError(u"LCIA static method %s not found" % method)
         if data is None and not self.raw:
             raise EmptyTimeline("No data to characterize")
         method_data = {x[0]: x[1] for x in Method(method).load()}
@@ -64,7 +64,7 @@ class Timeline(object):
 
     def characterize_dynamic(self, method, data=None, cumulative=True, stepped=False):
         if method not in dynamic_methods:
-            raise ValueError(u"LCIA dynamic method %s not found" % unicode(method))
+            raise ValueError(u"LCIA dynamic method %s not found" % method)
         if data is None and not self.raw:
             raise EmptyTimeline("No data to characterize")
         method = DynamicIAMethod(method)
