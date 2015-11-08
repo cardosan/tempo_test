@@ -91,11 +91,20 @@ class Timeline(object):
                 ))
 
         self.characterized.sort(key=lambda x: x.dt)
+
+        print("Before summer:")
+        print(len(self.characterized))
+
         return self._summer(self.characterized, cumulative, stepped)
 
     def _summer(self, iterable, cumulative, stepped=False):
+        print("Entering summer:")
+        print("len(iterable)", len(iterable))
+        print("Cumulative:", cumulative, "Stepped:", stepped)
         if cumulative:
             data =  self._cumsum_amount_over_time(iterable)
+            print("After self._cumsum_amount_over_time", len(list(data)))
+            print("Slice of data:", list(data)[:5])
         else:
             data =  self._sum_amount_over_time(iterable)
         if stepped:
@@ -123,4 +132,4 @@ class Timeline(object):
     def _cumsum_amount_over_time(self, iterable):
         data = self._sum_amount_over_time(iterable)
         values = [float(x) for x in np.cumsum(np.array([x[1] for x in data]))]
-        return zip([x[0] for x in data], values)
+        return list(zip([x[0] for x in data], values))
