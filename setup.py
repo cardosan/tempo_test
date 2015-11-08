@@ -6,7 +6,8 @@ setup(
     packages=[
         "bw2temporalis",
         "bw2temporalis.tests",
-        "bw2temporalis.examples"
+        "bw2temporalis.examples",
+        "bw2temporalis.cofire"
     ],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
