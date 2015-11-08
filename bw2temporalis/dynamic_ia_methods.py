@@ -33,11 +33,11 @@ class DynamicIAMethod(DataStore):
     """A dynamic impact assessment method. Not translated into matrices, so no ``process`` method."""
     _metadata = dynamic_methods
 
-    def to_worst_case_method(self, name, lower=None, upper=None):
+    def to_worst_case_method(self, name, lower=None, upper=None, dynamic=True):
         """Create a static LCA method using the worst case for each dynamic CF function.
 
         Default time interval over which to test for maximum CF is 2000 to 2100."""
-        kwargs = {}
+        kwargs = {'dynamic': dynamic}
         if lower is not None:
             kwargs['lower'] = lower
         if upper is not None:
