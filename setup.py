@@ -1,4 +1,5 @@
 from setuptools import setup
+import io
 
 setup(
     name='bw2temporalis',
@@ -11,7 +12,7 @@ setup(
     ],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
-    license=open('LICENSE.txt').read(),
+    license=io.open('LICENSE.txt', encoding='utf-8').read(),
     url="https://bitbucket.org/cmutel/brightway2-temporalis",
     install_requires=[
         "arrow",
@@ -24,7 +25,7 @@ setup(
         "stats_arrays",
     ],
     description='Provide a dynamic LCA calculations for the Brightway2 life cycle assessment framework',
-    long_description=open('README.rst').read(),
+    long_description=io.open('README.rst', encoding='utf-8').read(),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: End Users/Desktop',
