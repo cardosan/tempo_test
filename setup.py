@@ -3,7 +3,7 @@ import io
 
 setup(
     name='bw2temporalis',
-    version="0.9.1",
+    version="0.9.2",
     packages=[
         "bw2temporalis",
         "bw2temporalis.tests",
@@ -22,6 +22,9 @@ setup(
         "bw2calc>=0.11",
         "bw2data>=0.12",
         "bw2speedups>=2.0",
+        "numexpr",
+        "numpy",
+        "scipy",
         "stats_arrays",
     ],
     description='Provide a dynamic LCA calculations for the Brightway2 life cycle assessment framework',
