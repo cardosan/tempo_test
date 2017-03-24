@@ -18,7 +18,7 @@ However, Brightway2-temporalis has the following limitations:
 * Inventory datasets cannot change their inputs as a function of time. This limitation is necessary for the graph traversal to converge.
 * Exchanges must be linear, as in normal matrix-based LCA.
 
-See the example ipython notebook (`nbviewer <http://nbviewer.ipython.org/url/brightwaylca.org/examples/brightway2-temporalis.ipynb>`_, `html <http://brightwaylca.org/examples/brightway2-temporalis.html>`_) for a real usage example.
+See the example ipython notebook (`nbviewer <http://nbviewer.ipython.org/url/brightwaylca.org/examples/brightway2-temporalis.ipynb>`_, `html <https://brightwaylca.org/examples/brightway2-temporalis.html>`_) for a real usage example.
 
 Table of contents
 =================
