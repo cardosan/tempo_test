@@ -86,6 +86,7 @@ class _GlobalTemperaturePotential(object):
 
 GlobalTemperaturePotential = _GlobalTemperaturePotential()
 
+
 class _AtmosphericDecay(object):
     """Vectorized calculations for atmospheric decay curves for various gases.
 
@@ -221,6 +222,11 @@ def gtp(gas, emissions, times, time_step=0.1, cutoff=100, method="ar5_boucher"):
         getattr(GlobalTemperaturePotential, method)(times_2)
     )
     return forcing_td * temperature_td
+
+
+def rf(gas, emissions, times, time_step=0.1, cutoff=100):
+    return RadiativeForcing(gas, emissions, times, time_step, cutoff)
+
 
 # def CH4_rf(emission, years, tstep=0.01, kind='linear',
 #              decay=True, emiss_type='sustained'):
