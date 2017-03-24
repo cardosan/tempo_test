@@ -6,6 +6,7 @@ from .utils import get_maximum_value, get_function_name
 from bw2data import DataStore, Method, methods
 from bw2data.serialization import SerializedDict
 from bw2data.utils import random_string
+import copy
 import warnings
 
 
@@ -55,6 +56,21 @@ class DynamicIAMethod(DataStore):
         ])
         worst_case_method.process()
         return worst_case_method
+
+    def from_static_method(self, name):
+        """Turn a static LCIA method into a dynamic one.
+
+        The dynamic method should not be registered yet.
+
+        `name` is the name (tuple) of an existing static method."""
+        assert name in methods, "Method {} not found".format(name)
+        cfs = {obj[0]: obj[1]
+               for obj in Method(name).load()
+               if (len(obj) == 2 or obj[2] == 'GLO')}
+        metadata = copy.deepcopy(methods[name])
+        metadata['from_static_method'] = name
+        self.register(**metadata)
+        self.write(cfs)
 
     def create_functions(self, data=None):
         """Take method data that defines functions in strings, and turn them into actual Python code. Returns a dictionary with flows as keys and functions as values."""
