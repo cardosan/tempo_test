@@ -51,6 +51,18 @@ class TemporalDistribution(object):
         # Python 3
         return self.__div__(other)
 
+    def __lt__(self, other):
+        # Comparisons in Python 3
+        if not isinstance(other, TemporalDistribution):
+            return False
+        return self.values.sum() < other.values.sum()
+
+    def __cmp__(self, other):
+        # Comparisons in Python 2
+        if not isinstance(other, TemporalDistribution):
+            return -1
+        return cmp(self.values.sum(), other.values.sum())
+
     def __add__(self, other):
         if isinstance(other, TemporalDistribution):
             times = np.hstack((self.times, other.times))
