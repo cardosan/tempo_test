@@ -1,8 +1,8 @@
-arrow
 brightway2>=0.14
 bw2analyzer>=0.5.1
 bw2calc>=0.14.1
 bw2data>=0.17
+bw2speedups>=2.2
 colorama
 eight
 nose
@@ -11,3 +11,4 @@ progressbar-ipython
 scipy
 stats_arrays>=0.2.2
 voluptuous
+numexpr
