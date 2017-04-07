@@ -10,7 +10,7 @@ import numpy as np
 
 
 data_point = collections.namedtuple('data_point', ['dt', 'flow', 'ds', 'amount'])
-
+grouped_dp=collections.namedtuple('grouped_dp', ['dt', 'flow', 'amount']) #groups by flow and datetime
 
 class EmptyTimeline(Exception):
     pass
@@ -24,6 +24,7 @@ class Timeline(object):
     def __init__(self, data=None):
         self.raw = data or []
         self.characterized = []
+        self.dp_groups=[]
 
     def sort(self):
         """Sort the raw timeline data. Characterized data is already sorted."""
@@ -49,50 +50,93 @@ class Timeline(object):
         """Create a new Timeline for a particular activity."""
         return Timeline([x for x in self.raw if x.ds == activity])
 
+    # def total_flow_for_activity(self, flow, activity):
+        # """Return cumulative amount of the flow passed for the activity passed"""
+        # return sum([x.amount for x in self.raw if x.ds == activity and x.flow == flow])
+        
+    def total_amount_for_flow(self, flow):
+        """Return cumulative amount of the flow passed"""
+        return sum([x.amount for x in self.raw if x.flow == flow])
+
     def characterize_static(self, method, data=None, cumulative=True, stepped=False):
+        """Characterize a Timeline object with a static impact assessment method.
+        
+        Args:
+            * *method* (tuple): The static impact assessment method.
+            * *data* (Timeline object; default=None): ....
+            * *cumulative* (bool; default=True): when True return cumulative impact over time.
+            * *stepped* (bool; default=True):...
+        """
+
         if method not in methods:
             raise ValueError(u"LCIA static method %s not found" % method)
         if data is None and not self.raw:
             raise EmptyTimeline("No data to characterize")
-        method_data = {x[0]: x[1] for x in Method(method).load()}
+        self.method_data = {x[0]: x[1] for x in Method(method).load()}    
+        self.dp_groups=self._groupby_sum_by_flow(self.raw if data is None else data)
+        
         self.characterized = [
-            data_point(nt.dt, nt.flow, nt.ds, nt.amount * method_data.get(nt.flow, 0))
-            for nt in (data if data is not None else self.raw)
-        ]
+                    grouped_dp(nt.dt, nt.flow, nt.amount * self.method_data.get(nt.flow, 0))
+                    # grouped_dp(nt.dt, nt.flow, nt.amount * method_data.get(nt.flow, 0))
+                    for nt in self.dp_groups
+                ]
         self.characterized.sort(key=lambda x: x.dt)
         return self._summer(self.characterized, cumulative, stepped)
 
+
     def characterize_dynamic(self, method, data=None, cumulative=True, stepped=False):
+        """Characterize a Timeline object with a dynamic impact assessment method.
+        
+        Args:
+            * *method* (tuple): The dynamic impact assessment method.
+            * *data* (Timeline object; default=None): ....
+            * *cumulative* (bool; default=True): when True return cumulative impact over time.
+            * *stepped* (bool; default=True):...
+        """
         if method not in dynamic_methods:
             raise ValueError(u"LCIA dynamic method %s not found" % method)
         if data is None and not self.raw:
             raise EmptyTimeline("No data to characterize")
         method = DynamicIAMethod(method)
-        method_data = method.load()
-        method_functions = method.create_functions(method_data)
+        self.method_data = method.load()
+        method_functions = method.create_functions(self.method_data)
+
         self.characterized = []
+        self.dp_groups=self._groupby_sum_by_flow(self.raw if data is None else data)
 
-        for obj in (data if data is not None else self.raw):
-            if obj.flow in method_functions:
-                self.characterized.extend([
-                    data_point(
-                        item.dt,
-                        obj.flow,
-                        obj.ds,
-                        item.amount * obj.amount
-                    ) for item in method_functions[obj.flow](obj.dt)
-                ])
-            else:
-                self.characterized.append(data_point(
-                    obj.dt,
+        for obj in self.dp_groups:
+            # if obj.flow in method_functions:
+            self.characterized.extend([
+                grouped_dp(
+                    item.dt,
                     obj.flow,
-                    obj.ds,
-                    obj.amount * method_data.get(obj.flow, 0)
-                ))
-
+                    item.amount * obj.amount
+                ) for item in method_functions[obj.flow](obj.dt)
+            ])
+            # else:
+                # continue
+                #GIU: I would skipe this,we save time plus memory, in groupby_sum_by_flow already skips datapoint not in method_data
+                #also more consistent in my opinion (the impact is not 0 but is simply not measurable)
+                
+                # self.characterized.append(grouped_dp(
+                    # obj.dt,
+                    # obj.flow,
+                    # obj.amount * method_data.get(obj.flow, 0)
+                # ))
+                
         self.characterized.sort(key=lambda x: x.dt)
 
         return self._summer(self.characterized, cumulative, stepped)
+
+    #~1.5 times faster than using Counter() and ~3 than using groupby that need sorting before but still not great (e.g. pandas ~2 times faster, check if possible to use numpy_groupies somehow )
+    #CHECK WHAT IS THIS APPROACH AND IF APPLICABLE http://stackoverflow.com/a/18066479/4929813    
+    def _groupby_sum_by_flow(self,iterable):
+        """group and sum datapoint by flow, it makes much faster characterization"""
+        c = collections.defaultdict(int)
+        for dp in iterable:
+            c[dp.dt,dp.flow] += dp.amount
+        return[grouped_dp(dt_fl[0],dt_fl[1],amount) for dt_fl,amount in c.items() 
+                        if dt_fl[1] in self.method_data and amount != 0 ] # skip datapoints with flows without dyn_met and 0 bio_flows  
 
     def _summer(self, iterable, cumulative, stepped=False):
         if cumulative:
@@ -105,7 +149,8 @@ class Timeline(object):
             return self._to_year([x[0] for x in data]), [x[1] for x in data]
 
     def _to_year(self, lst):
-        to_yr = lambda x: x.year + x.month / 12. + x.day / 365.
+        """convert datetime to fractional years"""
+        to_yr = lambda x: x.year + x.month / 12. + x.day / 365.24
         return [to_yr(obj) for obj in lst]
 
     def _stepper(self, iterable):
@@ -115,13 +160,18 @@ class Timeline(object):
         return self._to_year(xs), ys
 
     def _sum_amount_over_time(self, iterable):
+        """groupby date and sum amount"""
+        #GIU: Think here, wiith different data structure we could use consolidate maybe
         return sorted([
             (dt, sum([x.amount for x in res]))
             for dt, res in
-            itertools.groupby(iterable, key=lambda x: x.dt)
+            itertools.groupby(iterable, key=lambda x: x.dt.date())
+            # itertools.groupby(iterable, key=lambda x: x.dt.astype(object).date()) # to work with numpy datetime. leave for now
+
         ])
 
     def _cumsum_amount_over_time(self, iterable):
+        """"""
         data = self._sum_amount_over_time(iterable)
         values = [float(x) for x in np.cumsum(np.array([x[1] for x in data]))]
         return list(zip([x[0] for x in data], values))
