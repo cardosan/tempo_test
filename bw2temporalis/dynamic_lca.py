@@ -4,6 +4,7 @@ from eight import *
 
 from .temporal_distribution import TemporalDistribution
 from .timeline import Timeline
+from .dyn_methods.forest import get_static_forest_keys
 from bw2calc import LCA
 from bw2data import Database, get_activity, databases
 from bw2data.logs import get_logger
@@ -44,6 +45,7 @@ Args:
         self.cutoff_value = cutoff
         self.log = get_logger("dynamic-lca.log") if log else FakeLog()
         self.lca_object=lca_object
+        self.stat_for_keys=get_static_forest_keys() #return forest processes
         
         #return static db and create set where will be added nodes as traversed
         all_databases = set.union(*[Database(key[0]).find_graph_dependents() for key in self.demand])
@@ -254,6 +256,22 @@ Args:
                     if bio_amount_scaled !=0:
                         self.timeline.add(bio_dt, flow, ds,bio_amount_scaled)
                 # self.c[flow, ds] = dt_bio+self.c.get((flow, ds),0) #test for using TD
+
+
+            ##deal with co2 biogenic dynamic in installed (static) databases   
+            if ('biosphere3', 'cc6a1abb-b123-4ca6-8f16-38209df609be') in self.lca.biosphere_dict:   
+                row_bioc = self.lca.biosphere_dict[('biosphere3', 'cc6a1abb-b123-4ca6-8f16-38209df609be')] 
+                col_cbio = self.lca.biosphere_matrix[row_bioc, :].tocoo() #get coordinates Carbon dioxide, in air
+                
+                ## find inventory values and sum
+                ## in principle `CO2, in air` should have a negative 
+                ## but in ei it is positive so no need to change sign in bio_c
+                bio_c=sum([self.lca.inventory[row_bioc, index] for index in col_cbio.col if self.reverse_activity_dict[index] in self.stat_for_keys])
+                dt_bio_c=self._calculate_bio_td_datetime(bio_c,tech_td)
+                for bio_dt, bio_amount_scaled in dt_bio_c:
+                    if bio_amount_scaled !=0:
+                        self.timeline.add(bio_dt, ('static_forest','C_biogenic'), ds, bio_amount_scaled)
+                #self.c[('static_forest','C_biogenic'), ds] = dt_bio+self.c.get((('static_forest','C_biogenic'), ds),0) #test for using TD
 
             return   
     
