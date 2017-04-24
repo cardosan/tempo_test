@@ -4,7 +4,7 @@ from eight import *
 
 import numpy as np
 from ..dynamic_lca import DynamicLCA
-from .constants import co2_agtp_td,co2_rf_td
+from .constants import co2_agtp_ar5_td,co2_rf_td
 
 # from .dynamic_ia_methods import dynamic_methods, DynamicIAMethod
 # from .temporal_distribution import TemporalDistribution
@@ -46,7 +46,7 @@ Args:
 
     #pick denominator based on metric
     if dyn_m[dynIAM]=='GWP':co2=co2_rf_td
-    if dyn_m[dynIAM]=='GTP':co2=co2_agtp_td
+    if dyn_m[dynIAM]=='GTP':co2=co2_agtp_ar5_td
 
         
 

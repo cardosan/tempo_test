@@ -7,8 +7,7 @@ from eight import *
 We wrap this library to provide dynamic LCIA methods that fit the Temporalis data model."""
 
 from ..dynamic_ia_methods import DynamicIAMethod
-from .constants import co2_agtp_td, co2bio_agtp_td, ch4_agtp_td,ch4_fossil_agtp_td,n2o_agtp_td, sf6_agtp_td,co2_rf_td, co2bio_rf_td, ch4_rf_td,ch4_fossil_rf_td,n2o_rf_td, sf6_rf_td
-
+from .constants import *
 from bw2data import config, Database
 import itertools
 
