@@ -225,3 +225,17 @@ class Timeline(object):
         data = self._sum_amount_over_time(iterable)
         values = [float(x) for x in np.cumsum(np.array([x[1] for x in data]))]
         return list(zip([x[0] for x in data], values))
+        
+        
+def load_dLCI(filepath):
+    """Load the dynamic lci saved with `bw2temporalis.DynamicLCA.save_dLCI`.
+    Args:
+        * *filepath* (str) filepath of the file
+
+    """   
+    f = gzip.open(filepath,'rb')
+    timeline_raw = pickle.load(f)
+    f.close()
+    
+    return timeline_raw
+        

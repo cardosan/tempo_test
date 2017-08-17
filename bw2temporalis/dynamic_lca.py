@@ -450,3 +450,22 @@ Args:
         if not hasattr(self.lca, "solver"):
             self.lca.decompose_technosphere()
         return self.lca
+        
+    def save_dLCI(self,folderpath=None):
+        """Save the results of DynamicLCA to a (compressed) ``bw2lci`` file containing dictionary like 
+        ``'timeline':timeline object,
+        'demand':dLCI demand
+        'wc_method':dLCI worst_case_method
+        The file is saved to the current working directory by default with the filename=demandkey_worstcase_method. Restoration is done using 'bw2temporalis.timeline.load_LCI'. 
+        Args:
+            * *folderpath* (str, default=None): the filepath of the timeline (without file extension)
+        """
+        
+        assert hasattr(self, "timeline"), "Must do calculate first"
+        #make folder if not existing and give name of demand_worstcase_method to the file 
+        os.makedirs(folderpath or '.', exist_ok=True) #create folder if not existing yet see  https://stackoverflow.com/a/12517490/4929813     
+        tl_path=os.path.join(folderpath or '.','{}_{}.bw2lci'.format(self.demand, self.worst_case_method))
+        f = gzip.open(tl_path,'wb')
+        pickle.dump({'timeline':self.timeline,'demand':self.demand,'wc_method':self.worst_case_method},f)
+        f.close()
+
