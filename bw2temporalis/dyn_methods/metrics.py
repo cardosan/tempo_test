@@ -34,11 +34,12 @@ from .biogenic_carbon import WoodDecay,ForestGrowth
 
 #TODO: all made temporarily compatible with timedelta, but codes need cleaning, did not have time, will do after the paper draft is finished
 
+#Sources # AR5-SM, p. 8SM-16,
 RADIATIVE_EFFICIENCIES = {
-    'co2': 1.7517e-15,        # AR5-SM, p. 8SM-16,
-    'ch4': 1.277E-13 * 1.65,  # Source?
-    'n2o': 3.845E-13,         # Source?
-    'sf6': 2.01e-11,           # Source?
+    'co2': 1.7517e-15,        
+    'ch4': 1.277E-13 * 1.65,  
+    'n2o': 3.845E-13,        
+    'sf6': 2.01e-11,          
 }
 
 
@@ -200,9 +201,7 @@ class _RadiativeForcing(object):
         if gas == "ch4_fossil":
             return self.fossil_ch4(emissions, emission_times, time_step, cutoff)
 
-        #TODO implement landscape approach
-        elif gas == "co2_biogenic":  
-            assert np.count_nonzero(emissions)==1, "biogenic C is characterized only for stands i.e. single pulse over the time_horizon considered"            
+        elif gas == "co2_biogenic":     
             emission_RE_td = TemporalDistribution(
                 emission_times,
                 emissions * RADIATIVE_EFFICIENCIES['co2']
@@ -211,7 +210,7 @@ class _RadiativeForcing(object):
                 times_TD,
                 co2bio_stand_decay(cutoff=cutoff,tstep=time_step,bio_emis_yr=emission_times)
             )
-            return emission_RE_td * decay_td
+            return (emission_RE_td * decay_td)[:cutoff]
                         
         elif gas not in RADIATIVE_EFFICIENCIES:
             raise ValueError("Unknown gas")
@@ -225,7 +224,7 @@ class _RadiativeForcing(object):
                 times_TD,
                 AtmosphericDecay(gas, times_decay)                
             )
-            return emission_RE_td * decay_td
+            return (emission_RE_td * decay_td)[:cutoff] 
 
     def fossil_ch4(self, emissions, emission_times, time_step, cutoff):
 
@@ -303,12 +302,9 @@ def AGTP(gas, emissions, times, time_step='Y', cutoff=100, method="ar5_boucher")
     )
     
     return (forcing_td * temperature_td)[:len(times_TD)] #convolution IRF with IRF temperature  (see eq.4 and 0 Olivie and Peters (2013, doi:10.5194/esd-4-267-2013))
-    
-# def rf(gas, emissions, times, time_step=0.1, cutoff=100):
-    # return RadiativeForcing(gas, emissions, times, time_step, cutoff)
 
 #TODO: recode this to deal better with timedelta
-def co2bio_stand_decay(cutoff=100,growth_sc_fact=1,tstep='Y',rot=100,NEP=None,bio_decay="delta",bio_emis_yr=0):
+def co2bio_stand_decay(cutoff=100,growth_sc_fact=1,tstep='Y',rot=100,NEP=None,bio_decay="delta",bio_emis_yr=np.array([0])):
     """
     Decay curve for a unitary pulse emission of biogenic CO2 (Cherubini 2011  doi: 10.1111/j.1757-1707.2011.01102.x)
     following the single stand approch (Cherubini 2013 doi.org/10.1016/j.jenvman.2013.07.021)

@@ -17,6 +17,8 @@ def create_climate_methods():
     
     """Create the dynamic LCIA methods for AGTP and Radiative Forcing that are calculated every year over 500 years for each GHG emissions.
     Gasses from custom biosphere database can be added simpy adding their names to `gas_name_in_biosphere`
+    
+    All the work is based on the library ghgforcing built by Greg Schively. It can be downloaded from https://github.com/gschivley/ghgforcing.
     """
     
     bio = Database(config.biosphere)
@@ -50,7 +52,6 @@ def create_climate_methods():
              "agtp_low":"GTP OP low",
              "agtp_high":"GTP OP high",
              "rf":"RadiativeForcing",
-             
              }
                  
     function="""def {0}_{1}_function(datetime):
@@ -71,34 +72,16 @@ def create_climate_methods():
         for gas,gas_bio in gas_name_in_biosphere.items():
             if gas=='co2bio':
                 #need again to convert datetime back to numpy
-                cf_data[gas_bio] =function.format(gas,met_func)                
-                 # """def {0}_{1}_function(datetime):
-                                        # from bw2temporalis.dyn_methods.constants import {0}_{1}_td
-                                        # import numpy as np
-                                        # import collections
-                                        # return_tuple = collections.namedtuple('return_tuple', ['dt', 'amount'])
-                                        # return [return_tuple(d,v) for d,v in zip(np.datetime64(datetime)+{0}_{1}_td.times,{0}_{1}_td.values)]""".format(gas,met_func) 
+                cf_data[gas_bio] =function.format(gas,met_func)
             else:
                 for gas_n in gas_bio:
                     for bio_key in [ds.key for ds in bio if ds['name']==gas_n]: 
-                        cf_data[bio_key] = function.format(gas,met_func)
-                        # """def {0}_{1}_function(datetime):
-                        # from bw2temporalis.dyn_methods.constants import {0}_{1}_td
-                        # import numpy as np
-                        # import collections
-                        # return_tuple = collections.namedtuple('return_tuple', ['dt', 'amount'])
-                        # return [return_tuple(d,v) for d,v in zip(np.datetime64(datetime)+{0}_{1}_td.times,{0}_{1}_td.values)]""".format(gas,met_func)
-
-                        # return [return_tuple(d,v) for d,v in zip(np.datetime64(datetime)+{0}_{1}_td.times,{0}_{1}_td.values)]""".format(gas,met_func)
-                            
-
-        method.register()
-        method.write(cf_data)
-        #GIU:what is this
-        # method.register(
-            # from_function="create_climate_methods",
-            # library="cofire"
-        # )        
+                        cf_data[bio_key] = function.format(gas,met_func)                            
+        method.register(
+            from_function="create_climate_methods",
+            library="dyn_methods"
+        )   
+        method.write(cf_data)     
 
         method.to_worst_case_method((met_name,"worst case"), dynamic=False)
         print(method)

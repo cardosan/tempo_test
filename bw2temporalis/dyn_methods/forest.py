@@ -47,8 +47,20 @@ def get_static_forest_keys():
      "hardwood forestry, oak, sustainable forest management",
      "hardwood forestry, birch, sustainable forest management",
      "hardwood forestry, eucalyptus ssp., sustainable forest management"]
-     
-    forest = set( ei_22 + ei_32_33 )
+    
+    #it should be the first one, but as it is not temporalis must be the second
+    estelle=['_Wood waste, sorted at panel plant, 20% water on dry mass basis/ EU U',
+            '_Wood construction waste, 20% water on dry mass basis',
+            ]
+            
+    #dunno why this below returns skips some datasets
+    #FORMIT_forest=[x['name'] for x in Database(db) if x['name'].split(',')[-1]==' NPP' for db in ['BAU0', 'BAU26', 'BAU45', 'BAU85', 'SCEN2_45', 'SCEN3_45', 'SCEN4_45', 'SCEN5_45', 'SCEN6_45']]
+
+    #~FORMIT_forest=[]
+    #~for db in ['BAU0', 'BAU26', 'BAU45', 'BAU85', 'SCEN2_45', 'SCEN3_45', 'SCEN4_45', 'SCEN5_45', 'SCEN6_45','trial']:
+        #~FORMIT_forest.extend([x['name'] for x in Database(db) if x['name'].split(',')[-1]==' biogenic'])
+
+    forest = set( ei_22 + ei_32_33 + estelle  + FORMIT_forest)
     projects.set_current("{}".format(projects.current)) #need to do this otherwise uses default project if imported before setting the proj
     db = Database(config.biosphere)
     

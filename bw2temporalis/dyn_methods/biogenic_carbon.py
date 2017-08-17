@@ -84,7 +84,7 @@ class WoodDecay(object):
         # return decay
         
     def delta(emission_index=0,t_horizon=100,tstep=.1):
-        """calculate exponential decay
+        """calculate delta function (i.e. punctual year emission)
         """      
         decay=np.zeros(int( (t_horizon/tstep )+1))
         decay[emission_index]=1
