@@ -3,11 +3,17 @@ from __future__ import print_function, unicode_literals
 from eight import *
 
 from .dynamic_ia_methods import DynamicIAMethod, dynamic_methods
-from bw2data import Method, methods
+from bw2data import Method, methods, get_activity
 import collections
 import itertools
 import numpy as np
-
+import datetime
+import os
+import gzip
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 data_point = collections.namedtuple('data_point', ['dt', 'flow', 'ds', 'amount'])
 grouped_dp=collections.namedtuple('grouped_dp', ['dt', 'flow', 'amount']) #groups by flow and datetime
@@ -18,7 +24,6 @@ class EmptyTimeline(Exception):
 
 class Timeline(object):
     """Sum and group elements over time.
-
     Timeline calculations produce a list of [(datetime, amount)] tuples."""
 
     def __init__(self, data=None):
@@ -50,9 +55,9 @@ class Timeline(object):
         """Create a new Timeline for a particular activity."""
         return Timeline([x for x in self.raw if x.ds == activity])
 
-    # def total_flow_for_activity(self, flow, activity):
-        # """Return cumulative amount of the flow passed for the activity passed"""
-        # return sum([x.amount for x in self.raw if x.ds == activity and x.flow == flow])
+    def total_flow_for_activity(self, flow, activity):
+        """Return cumulative amount of the flow passed for the activity passed"""
+        return sum([x.amount for x in self.raw if x.ds == activity and x.flow == flow])
         
     def total_amount_for_flow(self, flow):
         """Return cumulative amount of the flow passed"""
@@ -67,7 +72,6 @@ class Timeline(object):
             * *cumulative* (bool; default=True): when True return cumulative impact over time.
             * *stepped* (bool; default=True):...
         """
-
         if method not in methods:
             raise ValueError(u"LCIA static method %s not found" % method)
         if data is None and not self.raw:
@@ -86,7 +90,7 @@ class Timeline(object):
 
     def characterize_dynamic(self, method, data=None, cumulative=True, stepped=False):
         """Characterize a Timeline object with a dynamic impact assessment method.
-        
+        Return a nested list of year and impact
         Args:
             * *method* (tuple): The dynamic impact assessment method.
             * *data* (Timeline object; default=None): ....
@@ -127,6 +131,52 @@ class Timeline(object):
         self.characterized.sort(key=lambda x: x.dt)
 
         return self._summer(self.characterized, cumulative, stepped)
+        
+    def characterize_static_by_process(self, method, characterize_static_kwargs={}):
+        """Characterize a Timeline object with a static impact assessment method separately by process
+        Return a dictionary with process name as key and a nested list of year and impact as value
+        Args:
+            * *method* (tuple): The static impact assessment method.
+            * *characterize_static_kwargs* (dictionary; default={}): optional arguments (passed as key=argument name, value= argument value) passed to the called function `characterize_static` (e.g.'cumulative':True). See `characterize_static` for the possible arguments to pass
+        """
+        #skip None that is returned from DynamicLCA when the overlall LCA impact of the demand is==0
+        return {get_activity(process)['name']:[self.timeline_for_activity(process).characterize_static(method,**characterize_static_kwargs)] for process in self.processes() if process is not None} 
+        
+    def characterize_dynamic_by_process(self, method, characterize_dynamic_kwargs={}):
+        """Characterize a Timeline object with a static impact assessment method separately by process
+        Return a dictionary with process name as key and a nested list of year and impact as value
+        Args:
+            * *method* (tuple): The dynamic impact assessment method.
+            * *characterize_dynamic_kwargs* (dictionary; default={}): optional arguments (passed as key=argument name, value= argument value) passed to the called function `characterize_dynamic` (e.g. 'cumulative':True). See `characterize_dynamic` for the possible arguments to pass
+        """
+        
+        #skip None that is returned from DynamicLCA when the overla LCA impact of the demand is==0
+        return {get_activity(process)['name']:[self.timeline_for_activity(process).characterize_dynamic(method,**characterize_dynamic_kwargs)] for process in self.processes() if process is not None} 
+
+    def characterize_static_by_flow(self, method, characterize_static_kwargs={}):
+        """Characterize a Timeline object with a static impact assessment method separately by flow
+        Return a dictionary with flow name as key and a nested list of year and impact as value
+        Args:
+            * *method* (tuple): The static impact assessment method.
+            * *characterize_static_kwargs* (dictionary; default={}): optional arguments (passed as key=argument name, value= argument value) passed to the called function `characterize_static` (e.g.'cumulative':True). See `characterize_static` for the possible arguments to pass
+        """
+        #skip None that is return from DynamicLCA when the overla LCA impact of the demand is==0
+        return {get_activity(flow)['name']:[self.timeline_for_flow(flow).characterize_static(method,**characterize_static_kwargs)] for flow in self.flows() if flow is not None} 
+        
+    def characterize_dynamic_by_flow(self, method, characterize_dynamic_kwargs={}):
+        """Characterize a Timeline object with a static impact assessment method separately by flow
+        Return a dictionary with flow name as key and a nested list of year and impact as value
+        Args:
+            * *method* (tuple): The dynamic impact assessment method.
+            * *characterize_dynamic_kwargs* (dictionary; default={}): optional arguments (passed as key=argument name, value= argument value) passed to the called function `characterize_dynamic` (e.g. 'cumulative':True). See `characterize_dynamic` for the possible arguments to pass
+        """
+        
+        #skip None that is return from DynamicLCA when the overla LCA impact of the demand is==0
+        return {get_activity(flow)['name']:[self.timeline_for_flow(flow).characterize_dynamic(method,**characterize_dynamic_kwargs)] for flow in self.flows() if flow is not None} 
+        
+##############
+#INTERNAL USE#
+##############
 
     #~1.5 times faster than using Counter() and ~3 than using groupby that need sorting before but still not great (e.g. pandas ~2 times faster, check if possible to use numpy_groupies somehow )
     #CHECK WHAT IS THIS APPROACH AND IF APPLICABLE http://stackoverflow.com/a/18066479/4929813    
